@@ -1,0 +1,3 @@
+#!/bin/sh
+#dmenu $@ -l 50 -i -nb '#000000' -sb '#202020' -nf '#ff00ff' -sf '#ffeeff'
+dmenu $@ -l 50 -i -t

@@ -1,0 +1,2 @@
+#!/bin/sh
+gvim ~/writing/journal/`date +'%Y%m%d_%H%M.%S.txt'`

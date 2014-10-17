@@ -1,0 +1,3 @@
+#!/bin/sh
+echo $@
+urxvtc +si -sw -sl 50000 -hold -e /usr/bin/man -P cat $@

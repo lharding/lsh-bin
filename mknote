@@ -1,0 +1,4 @@
+#!/bin/zsh
+    NOTE="`logdate`: "
+    vared NOTE
+    echo "$NOTE" >> ~/writing/notes.txt

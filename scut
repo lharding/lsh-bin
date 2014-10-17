@@ -1,0 +1,84 @@
+#!/usr/bin/python2
+
+import sys
+import re
+
+fieldSep = '\s+'
+fieldJoin = ' '
+
+rawFieldSpecs = sys.argv[1].split(',')
+fieldSpecs = []
+
+for rawSpec in rawFieldSpecs:
+    spec = rawSpec.split('-')
+    if len(spec) == 1:
+        fieldSpecs.append([int(x) for x in spec])
+    elif len(spec) == 2:
+        if spec[0] == '':
+            spec[0] = 0
+        elif spec[0] == '^':
+            spec[0] = -2
+        else:
+            spec[0] = int(spec[0])
+
+        if spec[1] == '':
+            spec[1] = -1
+        elif spec[1] == '$':
+            spec[1] = -2
+        else:
+            spec[1] = int(spec[1])
+
+        if spec[0] >= 0 and spec[1] >= 0:
+            step = 1
+            if spec[0] > spec[1]:
+                step = -1
+                spec[1] = spec[1]-1
+
+            fieldSpecs.append(range(spec[0], spec[1], step))
+        else:
+            fieldSpecs.append(spec)
+    else:
+        print 'encountered invalid field spec: '+rawSpec
+
+if len(sys.argv) > 2:
+    for arg in sys.argv[2:]:
+        if arg[:2] == '-d':
+            fieldSep = arg[2:]
+        elif arg[:2] == '-j':
+            fieldJoin = arg[2:]
+
+fieldSep = re.compile(fieldSep)
+fieldJoin = fieldJoin.decode('string_escape')
+
+for line in sys.stdin:
+    line = line[:-1] #munch newline
+    outline = []
+    seps = [f for f in fieldSep.finditer(line)]
+    starts = [s.start() for s in seps]
+    ends = [s.end() for s in seps]
+    starts.append(len(line))
+    ends.insert(0, 0)
+    starts.insert(0,0)
+
+    for spec in fieldSpecs:
+        if len(spec) < 2 or (spec[0] >= 0  and spec[1] >= 0):
+            for field in spec:
+                if field < len(ends) and field < len(starts):
+                    outline.append(line[ends[field]:starts[field+1]])
+        else:
+            if(spec[0] == -2):
+                outline.append(line[0:starts[min(spec[1], len(starts)-1)]])
+            elif spec[1] == -1:
+                if spec[0] < len(ends):
+                    lastEnd = ends[spec[0]]
+                    for sep in seps[spec[0]:]:
+                        outline.append(line[lastEnd:sep.start()])
+                        lastEnd = sep.end()
+
+                    outline.append(line[lastEnd:])
+            elif spec[1] == -2:
+                if spec[0] < len(ends):
+                    outline.append(line[ends[spec[0]]:])
+                 
+    sys.stdout.write(fieldJoin.join(outline)+'\n')
+

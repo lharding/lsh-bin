@@ -1,0 +1,42 @@
+#!/bin/bash
+HOST=`hostname`
+EXCLUDE="/tmp/rsyncexcludes"
+case $1 in 
+"full")
+    COMMAND="sudo rsync"
+    SRCFILES="/*"
+    DSTDIR="backup/$HOST"
+    LINKDST="$DSTDIR.1"
+    cat > $EXCLUDE <<__EXCLUDES 
+dev/*
+proc/*
+sys/*
+tmp/*
+run/*
+mnt/*
+media/*
+lost+found
+home/*/.gvfs
+home/*/.cache
+home/*/.local/Steam
+home/*/.darcs/cache
+var/lib/mpd/music/*
+swapfile
+__EXCLUDES
+    echo "Starting full backup..."
+    ;; 
+"home") 
+    COMMAND="rsync"
+    SRCFILES="$HOME/*"
+    DSTDIR="backup/$HOST/$HOME"
+    LINKDST="backup/$HOST.1/$HOME"
+    echo '' > $EXCLUDE
+    ;;
+*)
+    echo "Usage: 'backup full' for full backup, or 'backup home' for homedir backup."
+    exit
+    ;;
+esac
+
+CMDLINE="$COMMAND -avP $SRCFILES `whoami`@192.168.1.254:$DSTDIR --delete --exclude-from=$EXCLUDE --link-dest=$LINKDST"
+$CMDLINE
