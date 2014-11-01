@@ -2,6 +2,8 @@
 
 I prefer using tiny scripts to aliases because it saves me going around to all my open terminals and re-sourcing .profile, and I have them available from contexts that aren't my main shell. This is the collection of those scripts that aren't machine-specific.
 
+Fair warning: these are [shop built jigs](http://robnapier.net/go-is-a-shop-built-jig) and may lack niceties like polite usage strings when given bad parameters. 
+
 ## The Scripts
 
 ### backup
@@ -15,6 +17,21 @@ Usage: `backup home` or `backup full`
 Use vmenu to choose from a list of existent X clients to switch to, or bring to the current workspace.
 
 Usage: `bringwindow -a` to switch to window, or `bringwindow -R` to bring the window to your current workspace.
+
+### drawer
+
+Manages 'drawer terminal' type programs, like a generalized version of `guake` or so.
+
+Usage: `drawer NAME [SIDE WIDTH HEIGHT COMMAND]`
+
+`NAME` is a symbolic name for the drawer. It should be a valid POSIX filename.
+`SIDE` is the side of the screen to attach the drawer to. Valid values are `left`, `right`, `top`, and `bottom`.
+`WIDTH` and `HEIGHT` may be either a size in pixels or a percentage of screen size (`84%`) specifying the dimensions of the window to create.
+`COMMAND` is the command with arguments which will actually create the window.
+
+When run, `drawer` looks in `/tmp/drawers.wids/` for a file called `NAME` containing an X window id. If found, that window's `hidden` EWMH hint will be toggled. If the file is not found, `COMMAND` is executed and the resulting window is positioned according `SIDE`, `WIDTH`, and `HEIGHT` and then focused, and the windows X window id is written to `/tmp/drawers.wids/$NAME` to allow future toggling.
+
+Drawer requires [wmctrl](http://tomas.styblo.name/wmctrl/) and [my fork of xtoolwait](https://github.com/lharding/xtoolwait) (although I have a pull request pending to merge the changes), and, optionally, [xdotool](http://www.semicomplete.com/projects/xdotool/) (to prod certain window managers into making the created window floating).
 
 ### journal
 

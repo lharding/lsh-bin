@@ -1,0 +1,93 @@
+#!/bin/bash
+
+# only first screen for now
+
+read SCR_WIDTH SCR_HEIGHT SCR_LEFT SCR_TOP < <(xrandr | head | grep -m 1 ' connected' | scut 2 | tr 'x+' '  ')
+
+NAME=$1
+
+# Find and show/hide the window if it exists
+# ==========================================
+
+TMPDIR=/tmp/drawers.wids/
+
+if [[ -e $TMPDIR$NAME ]]; then
+     read WINDOW < $TMPDIR$NAME
+
+    # Window exists? Show/hide it and we're done.
+    if xwininfo -id $WINDOW &> /dev/null; then
+        wmctrl -i -r $WINDOW -b toggle,hidden
+        wmctrl -i -R $WINDOW
+        exit
+    fi
+fi
+    
+# No window to show/hide, better create it.
+# =========================================
+
+SIDE=$2
+WIDTH=$3
+HEIGHT=$4
+
+shift 4
+
+# Handle fractions of screen size for width and height
+# ====================================================
+
+if [[ $WIDTH == *% ]]; then
+    WIDTH=${WIDTH:0:-1} # chomp '%'
+    WIDTH=$[($WIDTH*10*$SCR_WIDTH)/1000]
+fi
+
+if [[ $HEIGHT == *% ]]; then
+    HEIGHT=${HEIGHT:0:-1} # chomp '%'
+    HEIGHT=$[($HEIGHT*10*$SCR_HEIGHT)/1000]
+fi
+
+# Figure out where to put the window
+# ==================================
+
+TOP_ADJ=$[($SCR_HEIGHT-$HEIGHT)/2]
+LEFT_ADJ=$[($SCR_WIDTH-$WIDTH)/2]
+
+echo $LEFT_ADJ $TOP_ADJ
+
+case $SIDE in
+    "left")
+        LEFT=$SCR_LEFT
+        TOP=$[$SCR_TOP + $TOP_ADJ]
+    ;;
+    "right")
+        LEFT=$[$SCR_WIDTH - $WIDTH]
+        TOP=$[$SCR_TOP + $TOP_ADJ]
+    ;;
+    "bottom")
+        LEFT=$[$SCR_LEFT + $LEFT_ADJ]
+        TOP=$[$SCR_HEIGHT - $HEIGHT]
+    ;;
+    "top")
+        LEFT=$[$SCR_LEFT + $LEFT_ADJ]
+        TOP=$SCR_TOP
+esac
+
+echo ${WIDTH}x$HEIGHT+$LEFT+$TOP
+
+# Create the window
+# =================
+
+COMMAND=$@
+
+echo "no wid found in $TMPDIR$NAME, or no window with that id, starting prog"
+echo "cmd is" $COMMAND
+WINDOW=`xtoolwait -wid $COMMAND`
+mkdir -p $TMPDIR
+echo $WINDOW > $TMPDIR$NAME
+
+#Poke WM into knowing the window will be floating
+sleep 0.5
+xdotool key super+ctrl+space
+
+wmctrl -i -r $WINDOW -b add,skip_taskbar
+wmctrl -i -r $WINDOW -b add,sticky,above
+wmctrl -i -r $WINDOW -e 0,$LEFT,$TOP,$WIDTH,$HEIGHT
+wmctrl -i -R $WINDOW
