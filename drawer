@@ -53,8 +53,6 @@ fi
 TOP_ADJ=$[($SCR_HEIGHT-$HEIGHT)/2]
 LEFT_ADJ=$[($SCR_WIDTH-$WIDTH)/2]
 
-echo $LEFT_ADJ $TOP_ADJ
-
 case $SIDE in
     "left")
         LEFT=$SCR_LEFT
@@ -73,15 +71,11 @@ case $SIDE in
         TOP=$SCR_TOP
 esac
 
-echo ${WIDTH}x$HEIGHT+$LEFT+$TOP
-
 # Create the window
 # =================
 
 COMMAND=$@
 
-echo "no wid found in $TMPDIR$NAME, or no window with that id, starting prog"
-echo "cmd is" $COMMAND
 WINDOW=`xtoolwait -wid $COMMAND`
 mkdir -p $TMPDIR
 echo $WINDOW > $TMPDIR$NAME
