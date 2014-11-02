@@ -2,7 +2,6 @@
 
 # only first screen for now
 
-read SCR_WIDTH SCR_HEIGHT SCR_LEFT SCR_TOP < <(xrandr | head | grep -m 1 ' connected' | scut 2 | tr 'x+' '  ')
 
 NAME=$1
 
@@ -22,8 +21,10 @@ if [[ -e $TMPDIR$NAME ]]; then
     fi
 fi
     
-# No window to show/hide, better create it.
-# =========================================
+# No window to show/hide, better create it. Do setup for that.
+# ============================================================
+
+read SCR_WIDTH SCR_HEIGHT SCR_LEFT SCR_TOP < <(xrandr | head | grep -m 1 ' connected' | scut 2 | tr 'x+' '  ')
 
 SIDE=$2
 WIDTH=$3
