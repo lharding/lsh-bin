@@ -1,2 +1,3 @@
 #!/bin/sh
-sort -gr | vmenu | scut 2-$
+# input is likely to contain leading whitespace
+sort -gr | vmenu | sed 's/^ *//g' | scut 1-$
