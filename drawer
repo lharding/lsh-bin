@@ -16,8 +16,16 @@ if [[ -e $TMPDIR$NAME ]]; then
 
     # Window exists? Show/hide it and we're done.
     if xwininfo -id $WINDOW &> /dev/null; then
-        wmctrl -i -r $WINDOW -b toggle,hidden
-        wmctrl -i -R $WINDOW
+        #wmctrl -i -R $WINDOW
+        #wmctrl -i -R $WINDOW -b toggle,hidden
+        # Buggy wmctrl doesn't always focus the window when toggling, so do our own toggle logic:
+        if xwininfo -wm -id $WINDOW | grep -q '^ \+Hidden'; then
+            notify-send 'showing'
+            wmctrl -i -r $WINDOW -b remove,hidden
+            wmctrl -i -R $WINDOW
+        else
+            wmctrl -i -R $WINDOW -b add,hidden
+        fi
         exit
     fi
 fi
