@@ -9,6 +9,8 @@ case $1 in
     "get") $RSH_CMD local_get;;
     "tail") $RSH_CMD local_tail;;
     "local_put")
+	DATE=`logdate`
+	echo "======[$DATE]=====" >> $LOG_FILE
         tee -a $LOG_FILE > $CLIP_FILE
     ;;    
     "local_get")
