@@ -1,8 +1,8 @@
 #!/bin/bash
 
 RSH_CMD="ssh lsh.io bash --login rclip"
-CLIP_FILE="~/rclip.clip"
-LOG_FILE="~/rclip.log"
+CLIP_FILE="$HOME/rclip.clip"
+LOG_FILE="$HOME/rclip.log"
 
 case $1 in
     "put") $RSH_CMD local_put;;
