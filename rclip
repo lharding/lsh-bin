@@ -1,0 +1,20 @@
+#!/bin/bash
+
+RSH_CMD="ssh lsh.io rclip"
+CLIP_FILE="~/rclip.clip"
+LOG_FILE="~/rclip.log"
+
+case $1 in
+    "put") $RSH_CMD local_put;;
+    "get") $RSH_CMD local_get;;
+    "tail") $RSH_CMD local_tail;;
+    "local_put")
+        tee -a $LOG_FILE > $CLIP_FILE
+    ;;    
+    "local_get")
+        cat $CLIP_FILE
+    ;;
+    "local_tail")
+        tail -f -n +0 $LOG_FILE
+    ;;
+esac
