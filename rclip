@@ -1,6 +1,6 @@
 #!/bin/bash
 
-RSH_CMD="ssh lsh.io rclip"
+RSH_CMD="ssh lsh.io bash --login rclip"
 CLIP_FILE="~/rclip.clip"
 LOG_FILE="~/rclip.log"
 
