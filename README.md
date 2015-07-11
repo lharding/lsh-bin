@@ -24,10 +24,10 @@ Manages 'drawer terminal' type programs, like a generalized version of `guake` o
 
 Usage: `drawer NAME [SIDE WIDTH HEIGHT COMMAND]`
 
-`NAME` is a symbolic name for the drawer. It should be a valid POSIX filename.
-`SIDE` is the side of the screen to attach the drawer to. Valid values are `left`, `right`, `top`, and `bottom`.
-`WIDTH` and `HEIGHT` may be either a size in pixels or a percentage of screen size (`84%`) specifying the dimensions of the window to create.
-`COMMAND` is the command with arguments which will actually create the window.
+- `NAME` is a symbolic name for the drawer. It should be a valid POSIX filename.
+- `SIDE` is the side of the screen to attach the drawer to. Valid values are `left`, `right`, `top`, and `bottom`.
+- `WIDTH` and `HEIGHT` may be either a size in pixels or a percentage of screen size (`84%`) specifying the dimensions of the window to create.
+- `COMMAND` is the command with arguments which will actually create the window.
 
 When run, `drawer` looks in `/tmp/drawers.wids/` for a file called `NAME` containing an X window id. If found, that window's `hidden` EWMH hint will be toggled. If the file is not found, `COMMAND` is executed and the resulting window is positioned according `SIDE`, `WIDTH`, and `HEIGHT` and then focused, and the windows X window id is written to `/tmp/drawers.wids/$NAME` to allow future toggling.
 
@@ -57,11 +57,11 @@ Requires `ssh` (public key auth highly recommended) and `xclip` to use clipboard
 
 To use, put in `PATH` on each host you wish to use it on, and also on a net-accessible server, and update the `RSH_CMD` variable at the head of the script with the `ssh` command necessary to log into your server, and `touch rclip.clip; touch rclip.log`. Then:
 
-`rclip copy SELECTION`: store the contents of SELECTION to your `rclip` server.
-`rclip paste SELECTION`: read the contents of the `rclip` clip from your server into SELECTION.
-`rclip put`: read from `STDIN` and store to the `rclip` clip on your server.
-`rclip get`: print the contents of the  `rclip` clip from your server to `STDOUT`.
-`rclip tail`: follow the `rclip` log, printing each new clip as it's stored.
+- `rclip copy SELECTION`: store the contents of SELECTION to your `rclip` server.
+- `rclip paste SELECTION`: read the contents of the `rclip` clip from your server into SELECTION.
+- `rclip put`: read from `STDIN` and store to the `rclip` clip on your server.
+- `rclip get`: print the contents of the  `rclip` clip from your server to `STDOUT`.
+- `rclip tail`: follow the `rclip` log, printing each new clip as it's stored.
 
 `SELECTION` is one of the standard X selection names as understood by `xclip`: `primary`, `secondary`, `clipboard`. Defaults to `clipboard`.
 
