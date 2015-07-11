@@ -1,0 +1,29 @@
+#!/bin/bash
+
+RSH_CMD="ssh lsh.io bash --login rclip"
+CLIP_FILE="$HOME/rclip.clip"
+LOG_FILE="$HOME/rclip.log"
+
+case $2 in
+    primary|secondary|clipboard) SELECTION=$2 ;;
+    *) SELECTION="clipboard" ;;
+esac
+
+case $1 in
+    copy) xclip -o -selection $SELECTION | $0 put ;;
+    paste) $0 get | xclip -i -selection $SELECTION ;;
+    put) $RSH_CMD local_put;;
+    get) $RSH_CMD local_get;;
+    tail) $RSH_CMD local_tail;;
+    local_put)
+	DATE=`logdate`
+	echo -e "\n======[$DATE]=====" >> $LOG_FILE
+        tee -a $LOG_FILE > $CLIP_FILE
+    ;;    
+    local_get)
+        cat $CLIP_FILE
+    ;;
+    local_tail)
+        tail -f -n +0 $LOG_FILE
+    ;;
+esac
