@@ -1,0 +1,20 @@
+#!/usr/bin/python2
+
+import markdown2
+import sys
+
+onMarkdown = False
+markdownBlock = ""
+
+for line in sys.stdin:
+    if line.startswith('<<<<'):
+        if onMarkdown:
+            sys.stdout.write(markdown2.markdown(markdownBlock))
+            markdownBlock = ""
+
+        onMarkdown = not onMarkdown
+    else:
+        if onMarkdown:
+            markdownBlock += line
+        elif line is not None:
+            sys.stdout.write(line)
