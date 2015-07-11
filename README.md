@@ -49,6 +49,22 @@ Use zsh `vared` and `logdate` to append a timestamped line to `~/writing/notes.t
 
 Just runs `mknote` in a loop, for e.g. keeping a drawer term to collect and show notes.
 
+### rclip
+
+Remote clipboard with logging; replaces Pocket, Pinboard, etc with a very small shell script.
+
+Requires `ssh` (public key auth highly recommended) and `xclip` to use clipboard manipulation funcionality.
+
+To use, put in `PATH` on each host you wish to use it on, and also on a net-accessible server, and update the `RSH_CMD` variable at the head of the script with the `ssh` command necessary to log into your server, and `touch rclip.clip; touch rclip.log`. Then:
+
+`rclip copy SELECTION`: store the contents of SELECTION to your `rclip` server.
+`rclip paste SELECTION`: read the contents of the `rclip` clip from your server into SELECTION.
+`rclip put`: read from `STDIN` and store to the `rclip` clip on your server.
+`rclip get`: print the contents of the  `rclip` clip from your server to `STDOUT`.
+`rclip tail`: follow the `rclip` log, printing each new clip as it's stored.
+
+`SELECTION` is one of the standard X selection names as understood by `xclip`: `primary`, `secondary`, `clipboard`. Defaults to `clipboard`.
+
 ### scut (Super | Simple | Suckless) cut.
 
 An improved version of the POSIX `cut` command.
