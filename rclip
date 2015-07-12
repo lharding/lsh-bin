@@ -1,8 +1,13 @@
 #!/bin/bash
 
 RSH_CMD="ssh lsh.io bash --login rclip"
+FEEDBACK_CMD="true"
+
+[[ -e `which notify-send` ]] && FEEDBACK_CMD="notify-send"
+
 CLIP_FILE="$HOME/rclip.clip"
 LOG_FILE="$HOME/rclip.log"
+
 
 case $2 in
     primary|secondary|clipboard) SELECTION=$2 ;;
@@ -10,8 +15,16 @@ case $2 in
 esac
 
 case $1 in
-    copy) xclip -o -selection $SELECTION | $0 put ;;
-    paste) $0 get | xclip -i -selection $SELECTION ;;
+    copy) 
+        (xclip -o -selection $SELECTION | $0 put &&\
+        $FEEDBACK_CMD "rclip: uploaded $SELECTION") ||\
+        $FEEDBACK_CMD "rclip: failed to upload"
+    ;;
+    paste)
+        ($0 get | xclip -i -selection $SELECTION &&\
+        $FEEDBACK_CMD "rclip: downloaded clip to $SELECTION") ||\
+        $FEEDBACK_CMD "rclip: failed to download."
+    ;;
     put) $RSH_CMD local_put;;
     get) $RSH_CMD local_get;;
     tail) $RSH_CMD local_tail;;
