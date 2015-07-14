@@ -65,6 +65,15 @@ To use, put in `PATH` on each host you wish to use it on, and also on a net-acce
 
 `SELECTION` is one of the standard X selection names as understood by `xclip`: `primary`, `secondary`, `clipboard`. Defaults to `clipboard`.
 
+### sesh (Session Helper)
+
+`sesh` is a simple script to help restore your session state when using a dynamic window manager. For me the big use case is that I use individual browser windows managed by my window manager rather than browser tabs, so when I have to reboot, log in/out, etc, it's a pain moving the windows back to the desks I had them on.
+
+To use:
+
+- Before logout, shutdown, etc, invoke `sesh` with all your windows still open. A list of window names and associated desktop numbers will be saved at `~/.cache/sesh.state`.
+- After login and reloading apps, browser sessions, etc, invoke `sesh load, and it will move all you windows to the desktops specified in `~/.cache/sesh.state`.
+
 ### scut (Super | Simple | Suckless) cut.
 
 An improved version of the POSIX `cut` command.
@@ -77,6 +86,8 @@ Usage: `scut FIELDSPEC,[FIELDSPEC[,...]] [-dDELIMITER] [-jJOINER]`
 `JOINER` is the string used to join fields together in the output. Escape sequences such as '\t' will be processed into their represented characters.
 
 Unlike the `cut` command, fields specified multiple times will be printed multiple times.
+
+WARNING: contains python. A Golang version is in the works.
 
 ### shistory
 

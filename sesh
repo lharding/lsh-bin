@@ -1,0 +1,23 @@
+#!/bin/bash
+
+CACHE="$HOME/.cache/sesh.state"
+function munge() {
+    sed 's/Inbox ([,0-9]\+)//' | sed 's/^[^|]\+| \(.*Slack.*\)/\1/'
+}
+
+case $1 in
+    load)
+        IFS=$'\n'
+        for WIN in `cat $CACHE`; do
+            TITLE=`echo $WIN | scut 1-$ | munge`
+            DESK=`echo $WIN | scut 0`
+            echo "Moving to $DESK: $TITLE"
+            wmctrl -r "$TITLE" -t $DESK
+        done
+        echo "State loaded."
+    ;;
+    *)
+        wmctrl -l | scut 1,3-$ > $CACHE
+        echo "State saved."
+    ;;
+esac
