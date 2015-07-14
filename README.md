@@ -72,7 +72,8 @@ To use, put in `PATH` on each host you wish to use it on, and also on a net-acce
 To use:
 
 - Before logout, shutdown, etc, invoke `sesh` with all your windows still open. A list of window names and associated desktop numbers will be saved at `~/.cache/sesh.state`.
-- After login and reloading apps, browser sessions, etc, invoke `sesh load, and it will move all you windows to the desktops specified in `~/.cache/sesh.state`.
+- After login and reloading apps, browser sessions, etc, invoke `sesh load`, and it will move all you windows to the desktops specified in `~/.cache/sesh.state`.
+- There is a function `munge` at the top of the script that is used to process window titles to eliminate volatile elements like GMail's message count or Slack's unread indicator. This is necessary since windows must be identified by title substring.
 
 ### scut (Super | Simple | Suckless) cut.
 
