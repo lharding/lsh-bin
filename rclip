@@ -34,6 +34,18 @@ case $1 in
         tee -a $LOG_FILE > $CLIP_FILE
     ;;    
     local_get)  cat $CLIP_FILE;;
-    local_loop) while true; do $0 local_put; done;;
+    local_loop) 
+	ACCUM=''
+	while read -r LINE; do 
+	    ACCUM+=$(echo "$LINE" | sed 's/\\$//')
+
+	    if [[ $LINE != *\\ ]]; then
+	        echo "$ACCUM" | $0 local_put
+		ACCUM=
+	    else
+		ACCUM+=$'\n'
+	    fi
+	done
+    ;;
     local_tail) tail -f -n +0 $LOG_FILE;;
 esac
