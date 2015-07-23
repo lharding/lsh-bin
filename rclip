@@ -2,7 +2,7 @@
 
 # Setup
 LOCAL_CMD=$0
-REMOTE_CMD="ssh lsh.io bash --login rclip"
+REMOTE_CMD="ssh lsh.io"
 CMD_ARGS=""
 FEEDBACK_CMD="true"
 
@@ -55,9 +55,10 @@ case $OP in
         $FEEDBACK_CMD "rclip: downloaded clip to $SELECTION") ||\
         $FEEDBACK_CMD "rclip: failed to download."
     ;;
-    put) $REMOTE_CMD local_put $@;;
-    get) $REMOTE_CMD local_get $@;;
-    tail) $REMOTE_CMD local_tail $@;;
+    note) echo "$@" | $LOCAL_CMD put -a;;
+#    put) $REMOTE_CMD local_put $@;;
+#    get) $REMOTE_CMD local_get $@;;
+#    tail) $REMOTE_CMD local_tail $@;;
     io)
         $LOCAL_CMD tail $@ &
         while read MSG; do
@@ -65,15 +66,21 @@ case $OP in
         done
         kill %1
     ;;
-    local_put)
-	DATE=`logdate`
+    put)
 	if [[ $1 == '-a' ]]; then
-            tee -a $LOG_FILE >> $CLIP_FILE
+            $REMOTE_CMD bash -l -c "tee -a $LOG_FILE >> $CLIP_FILE"
         else
-            echo -e "\n======[$DATE | $@]=====" >> $LOG_FILE
-            tee -a $LOG_FILE > $CLIP_FILE
+            # confusingness here: escaping subsitution markers makes them be interpreted by the remote bash
+            (cat <<_putscript_
+                DATE=\`date +'%Y%m%d:%H%M.%S (epoch+%s)'\`
+                echo -e "\n======[\$DATE | $@]======" >> $LOG_FILE;
+                tee -a $LOG_FILE > $CLIP_FILE
+
+_putscript_
+            cat) | $REMOTE_CMD bash -l
         fi
     ;;    
-    local_get) cat $CLIP_FILE;;
-    local_tail) tail -f -n +0 $LOG_FILE;;
+    get) $REMOTE_CMD cat $CLIP_FILE;;
+    tail) $REMOTE_CMD tail -f -n +0 $LOG_FILE;;
+    *) echo "Unrecognized subcommand: $OP"; exit 1;;
 esac
