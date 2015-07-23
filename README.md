@@ -62,7 +62,7 @@ To use, put in `PATH` on each host you wish to use it on, and also on a net-acce
 - `rclip put [-a] [METADATA]`: read from `STDIN` and store to the `rclip` clip on your server.
 - `rclip get`: print the contents of the  `rclip` clip from your server to `STDOUT`.
 - `rclip tail`: follow the `rclip` log, printing each new clip as it's stored.
-- `rclip io: `STDOUT` prints the output of `rclip tail`, while each line passed to `STDIN` is posted as a new clip. Lines are read using the `read` command with no `-r` argument, so newlines can be escaped using `\`.
+- `rclip io`: `STDOUT` prints the output of `rclip tail`, while each line passed to `STDIN` is posted as a new clip. Lines are read using the `read` command with no `-r` argument, so newlines can be escaped using `\`.
 
 `SELECTION` is one of the standard X selection names as understood by `xclip`: `primary`, `secondary`, `clipboard`. Defaults to `clipboard`.
 
