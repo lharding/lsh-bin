@@ -57,13 +57,22 @@ Requires `ssh` (public key auth highly recommended) and `xclip` to use clipboard
 
 To use, put in `PATH` on each host you wish to use it on, and also on a net-accessible server, and update the `RSH_CMD` variable at the head of the script with the `ssh` command necessary to log into your server, and `touch rclip.clip; touch rclip.log`. Then:
 
-- `rclip copy SELECTION`: store the contents of SELECTION to your `rclip` server.
+- `rclip copy [-a] [METADATA] SELECTION`: store the contents of SELECTION to your `rclip` server.
 - `rclip paste SELECTION`: read the contents of the `rclip` clip from your server into SELECTION.
-- `rclip put`: read from `STDIN` and store to the `rclip` clip on your server.
+- `rclip put [-a] [METADATA]`: read from `STDIN` and store to the `rclip` clip on your server.
 - `rclip get`: print the contents of the  `rclip` clip from your server to `STDOUT`.
 - `rclip tail`: follow the `rclip` log, printing each new clip as it's stored.
+- `rclip io: `STDOUT` prints the output of `rclip tail`, while each line passed to `STDIN` is posted as a new clip. Lines are read using the `read` command with no `-r` argument, so newlines can be escaped using `\`.
 
 `SELECTION` is one of the standard X selection names as understood by `xclip`: `primary`, `secondary`, `clipboard`. Defaults to `clipboard`.
+
+`METADATA` is a string that will be inserted into the item header alongside the datestamp when logging. This can be any number of shell parameters, or a single string.
+
+The `-a` argument to `copy` and `put` causes the data to be appended to the current clip, rather than replacing it (and likewise, appended to the current log entry, rather than opening a new one).
+
+`rclip` also accepts a `-c CLIPNAME` argument before the operation, e.g. `rclip -c foo put ...`. If supplied, this specifies an alternate clip to use. This can be any filename-safe string and is inserted into the name of the clip and log files, so that instead of reading/writing from e.g. `rclip.clip`, issuing `rclip -c foo put` will write to `rclip.foo.log`. **Note the potential security implication here:** it's theoretically possible to use this option to cause `rclip` to write to any file your user can access.
+
+`rclip` uses many short-lived `ssh` connections and is much better and significantly faster when used with public-key authentication and [SSH Connection Sharing](https://puppetlabs.com/blog/speed-up-ssh-by-reusing-connections).
 
 ### sesh (Session Helper)
 
