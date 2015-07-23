@@ -1,0 +1,45 @@
+#!/bin/bash
+
+TMPFILE="/tmp/fifofy-`(head /dev/random; date) | md5sum | scut 0`"
+MODE=$1
+
+shift
+
+IN=false
+OUT=false
+
+case $MODE in
+    in) IN=true;;
+    out) OUT=true;;
+    *)
+        IN=true
+        OUT=true
+    ;;
+esac
+    
+if $IN; then
+    INFIFO="$TMPFILE-in"
+    mkfifo $INFIFO || exit 1
+    echo $INFIFO
+fi
+
+if $OUT; then
+    OUTFIFO="$TMPFILE-out"
+    mkfifo $OUTFIFO || exit 2
+    echo $OUTFIFO
+fi
+
+case $MODE in
+    in)
+        $@ < $INFIFO
+    ;;
+    out)
+        $@ > $OUTFIFO
+    ;;
+    *)
+        $@ < $INFIFO > $OUTFIFO
+    ;;
+esac
+
+[[ -e $INFIFO ]] && rm $INFIFO
+[[ -e $OUTFIFO ]] && rm $OUTFIFO
