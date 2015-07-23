@@ -57,7 +57,6 @@ case $OP in
     ;;
     put) $REMOTE_CMD local_put $@;;
     get) $REMOTE_CMD local_get $@;;
-    loop) $REMOTE_CMD local_loop $@;; 
     tail) $REMOTE_CMD local_tail $@;;
     io)
         $LOCAL_CMD tail $@ &
