@@ -69,7 +69,7 @@ case $OP in
     local_put)
 	DATE=`logdate`
 	if [[ $1 == '-a' ]]; then
-            cat > $CLIP_FILE
+            tee -a $LOG_FILE >> $CLIP_FILE
         else
             echo -e "\n======[$DATE | $@]=====" >> $LOG_FILE
             tee -a $LOG_FILE > $CLIP_FILE
