@@ -1,8 +1,9 @@
 #!/bin/bash
 
 # Setup
-RCLIP_CMD=$0
-RSH_CMD="ssh lsh.io bash --login rclip"
+LOCAL_CMD=$0
+REMOTE_CMD="ssh lsh.io bash --login rclip"
+CMD_ARGS=""
 FEEDBACK_CMD="true"
 
 [[ -e `which notify-send` ]] && [[ -n $DISPLAY ]] && FEEDBACK_CMD="notify-send"
@@ -17,6 +18,7 @@ while [[ -n $1 ]]; do
         '-c') 
             CLIP_NAME=$1
             CLIP_BASE+="."
+            CMD_ARGS+="-c $CLIP_NAME"
             shift
         ;;
         *) 
@@ -38,35 +40,41 @@ case $1 in
     *) SELECTION="clipboard" ;;
 esac
 
+LOCAL_CMD+=$CMD_ARGS
+REMOTE_CMD+=$CMD_ARGS
+
 # actually do anything
 case $OP in
     copy) 
-        (xclip -o -selection $SELECTION | $RCLIP_CMD put $@ &&\
+        (xclip -o -selection $SELECTION | $LOCAL_CMD put $@ &&\
         $FEEDBACK_CMD "rclip: uploaded $SELECTION") ||\
         $FEEDBACK_CMD "rclip: failed to upload"
     ;;
     paste)
-        ($RCLIP_CMD get $@ | xclip -i -selection $SELECTION &&\
+        ($LOCAL_CMD get $@ | xclip -i -selection $SELECTION &&\
         $FEEDBACK_CMD "rclip: downloaded clip to $SELECTION") ||\
         $FEEDBACK_CMD "rclip: failed to download."
     ;;
-    put) $RSH_CMD local_put $@;;
-    get) $RSH_CMD local_get $@;;
-    loop) $RSH_CMD local_loop $@;; 
-    tail) $RSH_CMD local_tail $@;;
+    put) $REMOTE_CMD local_put $@;;
+    get) $REMOTE_CMD local_get $@;;
+    loop) $REMOTE_CMD local_loop $@;; 
+    tail) $REMOTE_CMD local_tail $@;;
     io)
-        $RCLIP_CMD tail $@ &
+        $LOCAL_CMD tail $@ &
         while read MSG; do
-            echo "$MSG" | $RCLIP_CMD put $@
+            echo "$MSG" | $LOCAL_CMD put $@
         done
         kill %1
     ;;
     local_put)
 	DATE=`logdate`
-	[[ $1 != '-a' ]] && echo -e "\n======[$DATE | $@]=====" >> $LOG_FILE
-
-        tee -a $LOG_FILE > $CLIP_FILE
+	if [[ $1 == '-a' ]]; then
+            cat > $CLIP_FILE
+        else
+            echo -e "\n======[$DATE | $@]=====" >> $LOG_FILE
+            tee -a $LOG_FILE > $CLIP_FILE
+        fi
     ;;    
-    local_get)  cat $CLIP_FILE;;
+    local_get) cat $CLIP_FILE;;
     local_tail) tail -f -n +0 $LOG_FILE;;
 esac
