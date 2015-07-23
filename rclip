@@ -18,7 +18,7 @@ while [[ -n $1 ]]; do
         '-c') 
             CLIP_NAME=$1
             CLIP_BASE+="."
-            CMD_ARGS+="-c $CLIP_NAME"
+            CMD_ARGS+=" -c $CLIP_NAME"
             shift
         ;;
         *) 
