@@ -1,51 +1,72 @@
 #!/bin/bash
 
+# Setup
+RCLIP_CMD=$0
 RSH_CMD="ssh lsh.io bash --login rclip"
 FEEDBACK_CMD="true"
 
-[[ -e `which notify-send` ]] && FEEDBACK_CMD="notify-send"
+[[ -e `which notify-send` ]] && [[ -n $DISPLAY ]] && FEEDBACK_CMD="notify-send"
 
-CLIP_FILE="$HOME/rclip.clip"
-LOG_FILE="$HOME/rclip.log"
+CLIP_BASE="$HOME/rclip"
 
-case $2 in
-    primary|secondary|clipboard) SELECTION=$2 ;;
+# parse args
+while [[ -n $1 ]]; do
+    ARG=$1
+    shift
+    case $ARG in
+        '-c') 
+            CLIP_NAME=$1
+            CLIP_BASE+="."
+            shift
+        ;;
+        *) 
+            OP=$ARG
+            break
+        ;;
+    esac
+done
+
+CLIP_FILE="${CLIP_BASE}${CLIP_NAME}.clip"
+LOG_FILE="${CLIP_BASE}${CLIP_NAME}.log"
+
+# hackily handle selection choice for copy/paste
+case $1 in
+    primary|secondary|clipboard)
+        SELECTION=$1
+        shift
+    ;;
     *) SELECTION="clipboard" ;;
 esac
 
-case $1 in
+# actually do anything
+case $OP in
     copy) 
-        (xclip -o -selection $SELECTION | $0 put &&\
+        (xclip -o -selection $SELECTION | $RCLIP_CMD put $@ &&\
         $FEEDBACK_CMD "rclip: uploaded $SELECTION") ||\
         $FEEDBACK_CMD "rclip: failed to upload"
     ;;
     paste)
-        ($0 get | xclip -i -selection $SELECTION &&\
+        ($RCLIP_CMD get $@ | xclip -i -selection $SELECTION &&\
         $FEEDBACK_CMD "rclip: downloaded clip to $SELECTION") ||\
         $FEEDBACK_CMD "rclip: failed to download."
     ;;
-    put) $RSH_CMD local_put;;
-    get) $RSH_CMD local_get;;
-    loop) $RSH_CMD local_loop;; 
-    tail) $RSH_CMD local_tail;;
+    put) $RSH_CMD local_put $@;;
+    get) $RSH_CMD local_get $@;;
+    loop) $RSH_CMD local_loop $@;; 
+    tail) $RSH_CMD local_tail $@;;
+    io)
+        $RCLIP_CMD tail $@ &
+        while read MSG; do
+            echo "$MSG" | $RCLIP_CMD put $@
+        done
+        kill %1
+    ;;
     local_put)
 	DATE=`logdate`
-	echo -e "\n======[$DATE]=====" >> $LOG_FILE
+	[[ $1 != '-a' ]] && echo -e "\n======[$DATE | $@]=====" >> $LOG_FILE
+
         tee -a $LOG_FILE > $CLIP_FILE
     ;;    
     local_get)  cat $CLIP_FILE;;
-    local_loop) 
-	ACCUM=''
-	while read -r LINE; do 
-	    ACCUM+=$(echo "$LINE" | sed 's/\\$//')
-
-	    if [[ $LINE != *\\ ]]; then
-	        echo "$ACCUM" | $0 local_put
-		ACCUM=
-	    else
-		ACCUM+=$'\n'
-	    fi
-	done
-    ;;
     local_tail) tail -f -n +0 $LOG_FILE;;
 esac
