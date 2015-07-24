@@ -57,6 +57,7 @@ case $OP in
     ;;
     put) $REMOTE_CMD local_put $@;;
     get) $REMOTE_CMD local_get $@;;
+    note) echo -e "$@" | $LOCAL_CMD put -a;;
     tail) $REMOTE_CMD local_tail $@;;
     io)
         $LOCAL_CMD tail $@ &
@@ -72,8 +73,10 @@ case $OP in
         else
             echo -e "\n======[$DATE | $@]=====" >> $LOG_FILE
             tee -a $LOG_FILE > $CLIP_FILE
+            echo -e "\n" >> $LOG_FILE
         fi
     ;;    
     local_get) cat $CLIP_FILE;;
     local_tail) tail -f -n +0 $LOG_FILE;;
+    *) echo "Unrecognized subcommand $OP"; exit 1
 esac
