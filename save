@@ -1,0 +1,24 @@
+#!/bin/bash
+
+BRANCH=`git branch | scut 1`
+OLDBRANCH=$BRANCH
+
+if [[ $1 == "-b" ]]; then
+    BRANCH=$2
+    shift 2
+
+    git stash
+    git checkout -B $BRANCH
+    git stash pop
+fi  
+
+echo "Pushing $@ to $BRANCH"
+
+echo "Adding $@"
+git add $@
+echo "Committing."
+echo "Pushing ${@} at `date`" | git commit -F -
+echo "Pushing..."
+git push -u origin $BRANCH
+echo "Resetting state..."
+git checkout $OLDBRANCH
