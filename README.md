@@ -109,7 +109,7 @@ Run `man` with the given arguments, and display the outputs in a new terminal wi
 
 ### vmenu
 
-Run `dmenu` in vertical format, with multi-token matching, and the given arguments.
+Run `dmenu` in vertical format, with multi-token matching, and the given arguments. Falls back to `slmenu` if not running in an X session.
 
 ### www-browser
 
