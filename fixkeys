@@ -1,0 +1,4 @@
+#!/bin/sh
+xmodmap -e 'remove mod1 = Alt_L' -e 'keycode 64 = Super_L'
+xmodmap -e 'clear Lock' -e 'keycode 0x42 = Escape'
+notify-send "Keys remapped."
