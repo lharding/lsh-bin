@@ -20,7 +20,6 @@ if [[ -e $TMPDIR$NAME ]]; then
         #wmctrl -i -R $WINDOW -b toggle,hidden
         # Buggy wmctrl doesn't always focus the window when toggling, so do our own toggle logic:
         if xwininfo -wm -id $WINDOW | grep -q '^ \+Hidden'; then
-            notify-send 'showing'
             wmctrl -i -r $WINDOW -b remove,hidden
             wmctrl -i -R $WINDOW
         else
