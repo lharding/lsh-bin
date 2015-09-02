@@ -1,7 +1,7 @@
 #!/bin/sh
 case $1 in "-a") PROMPT="goto:" ;; "-R") PROMPT="bring:" ;; esac
 
-wmctrl -i $1 `wmctrl -xl | scut ^-3,4-$ -j'\t' | expand -t 12,15,40 | vmenu -p $PROMPT | scut 0`
+wmctrl -i $1 `wmctrl -xl | scut ^-3,4-$ -j'\t' | expand -t 12,15,40 | vmenu --no-refocus -p $PROMPT | scut 0`
 
 sleep 0.2 # give the wm time to change the focus
 xdotool key super+shift+Escape # poke the wm to change focus (awesome-wm likes to forget)
