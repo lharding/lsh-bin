@@ -46,11 +46,13 @@ REMOTE_CMD+=$CMD_ARGS
 # actually do anything
 case $OP in
     copy) 
+        $FEEDBACK_CMD "starting upload of $SELECTION"
         (xclip -o -selection $SELECTION | $LOCAL_CMD put $@ &&\
         $FEEDBACK_CMD "uploaded $SELECTION") ||\
         $FEEDBACK_CMD "failed to upload"
     ;;
     paste)
+        $FEEDBACK_CMD "starting download of $SELECTION"
         ($LOCAL_CMD get $@ | xclip -i -selection $SELECTION &&\
         $FEEDBACK_CMD "downloaded clip to $SELECTION") ||\
         $FEEDBACK_CMD "failed to download."
