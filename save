@@ -14,11 +14,7 @@ fi
 
 echo "Pushing $@ to $BRANCH"
 
-echo "Adding $@"
 git add $@
-echo "Committing."
 echo "Pushing ${@} at `date`" | git commit -F -
-echo "Pushing..."
 git push -u origin $BRANCH
-echo "Resetting state..."
 git checkout $OLDBRANCH
