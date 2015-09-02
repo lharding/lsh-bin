@@ -1,6 +1,6 @@
 #!/bin/sh
 #dmenu $@ -l 50 -i -nb '#000000' -sb '#202020' -nf '#ff00ff' -sf '#ffeeff'
-if [ -z $DISPLAY ]; then
+if [ -z $DISPLAY ] || ! (xrandr > /dev/null); then
     slmenu $@ -b -i -l $((`tput lines`-1))
 else
     WINDOW=`xprop -root _NET_ACTIVE_WINDOW | scut 4`
