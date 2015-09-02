@@ -1,0 +1,9 @@
+#!/bin/bash
+SLEEP=$1
+shift
+
+while true; do
+  clear
+  $@
+  sleep $SLEEP
+done
