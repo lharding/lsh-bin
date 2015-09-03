@@ -1,4 +1,18 @@
 #!/bin/sh
-xmodmap -e 'remove mod1 = Alt_L' -e 'keycode 64 = Super_L'
 xmodmap -e 'clear Lock' -e 'keycode 0x42 = Escape'
+
+if [[ $1 == "apple" ]]; then
+    DEVICES=$(dmesg | grep Apple | grep Keyboard | grep input )
+    IFS=$'\n' 
+    for DEVICE in $DEVICES; do
+        DEV=$(echo $DEVICE | sed -e 's/.*hidraw\([[:digit:]]\+\).*/\/dev\/hidraw\1/')
+        if echo $DEV | grep '^/dev' > /dev/null ; then
+            echo "Fixing $DEVICE as [$DEV]"
+            sudo fix-apple-kb $DEV
+        fi
+    done
+else
+    xmodmap -e 'remove mod1 = Alt_L' -e 'keycode 64 = Super_L'
+fi
+
 notify-send "Keys remapped."
