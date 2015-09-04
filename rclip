@@ -10,6 +10,17 @@ FEEDBACK_CMD="true"
 
 CLIP_BASE="$HOME/rclip"
 
+#USAGE: havearg arg $@
+function havearg() {
+    NEED=$1
+    shift
+    while [[ -n $1 ]]; do 
+        [[ $1 == $NEED ]] && return 0
+        shift
+        done
+    return 1
+}       
+
 # parse args
 while [[ -n $1 ]]; do
     ARG=$1
@@ -70,15 +81,43 @@ case $OP in
     ;;
     local_put)
 	DATE=`logdate`
+        ID=`date '+%s.%N'`
+        MUNGE='s/^\(.*\)$/data: \1/'
 	if [[ $1 == '-a' ]]; then
-            tee -a $LOG_FILE >> $CLIP_FILE
+            tee -a $CLIP_FILE | sed "$MUNGE" >> $LOG_FILE
         else
-            echo -e "\n======[$DATE | $@]=====" >> $LOG_FILE
-            tee -a $LOG_FILE > $CLIP_FILE
-            echo -e "\n" >> $LOG_FILE
+            printf "\nid: %s\ntime: %s\nmeta: %s\n" "$ID" "$DATE" "$*" >> $LOG_FILE
+            tee $CLIP_FILE | sed "$MUNGE" >> $LOG_FILE
+            printf "\n" >> $LOG_FILE
         fi
     ;;    
     local_get) cat $CLIP_FILE;;
-    local_tail) tail -f -n +0 $LOG_FILE;;
+    local_tail)
+        if [[ $1 == '-raw' ]]; then
+            shift
+            tail $@ $LOG_FILE
+        else
+            IFS=''
+            function extract_field() {
+                printf "%s" "$PACKET" | grep "^$1: \\?" | sed "s/^$1: \\?//g"
+            }
+
+            (printf "\n"; tail $@ $LOG_FILE) | while read LINE; do
+                if [[ -z $LINE ]]; then
+                    if [[ -n $PACKET ]]; then
+                        ID=$(extract_field id)
+                        TIME=$(extract_field time)
+                        META=$(extract_field meta)
+                        DATA=$(extract_field data)
+                        printf "`tput smso`    %s | %s    `tput rmso`\n%s\n\n" "$TIME" "$META" "$DATA"
+                    fi    
+                    PACKET=''
+                else
+                    PACKET+="$LINE"
+                    PACKET+=$'\n'
+                fi
+            done
+        fi                    
+    ;;
     *) echo "Unrecognized subcommand $OP"; exit 1
 esac
