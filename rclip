@@ -94,30 +94,27 @@ case $OP in
     local_get) cat $CLIP_FILE;;
     local_tail)
         if [[ $1 == '-raw' ]]; then
+            RAW=$1
             shift
-            tail $@ $LOG_FILE
-        else
-            IFS=''
-            function extract_field() {
-                printf "%s" "$PACKET" | grep "^$1: \\?" | sed "s/^$1: \\?//g"
-            }
+        fi
 
-            (printf "\n"; tail $@ $LOG_FILE) | while read LINE; do
-                if [[ -z $LINE ]]; then
-                    if [[ -n $PACKET ]]; then
-                        ID=$(extract_field id)
-                        TIME=$(extract_field time)
-                        META=$(extract_field meta)
-                        DATA=$(extract_field data)
-                        printf "`tput smso`    %s | %s    `tput rmso`\n%s\n\n" "$TIME" "$META" "$DATA"
-                    fi    
-                    PACKET=''
-                else
-                    PACKET+="$LINE"
-                    PACKET+=$'\n'
-                fi
-            done
-        fi                    
+        AFTER=
+        #TODO: non-brittle arg handling
+        if [[ $1 == '-after' ]]; then
+            shift
+            AFTER="-after $1"
+            shift
+        fi
+
+        tail $@ $LOG_FILE | decode-es $AFTER $LOCAL_CMD handle_packet $RAW $@
+    ;;
+    handle_packet)
+        if [[ $1 == '-raw' ]]; then
+            cat
+            printf "\n"
+        else
+            printf "`tput smso`    %s | %s | id=%s   `tput rmso`\n%s\n\n" "$TIME" "$META" "$ID" "$DATA"
+        fi
     ;;
     *) echo "Unrecognized subcommand $OP"; exit 1
 esac
