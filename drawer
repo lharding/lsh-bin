@@ -4,7 +4,7 @@
 # ======
 
 # Where to look for wid files:
-TMPDIR=/tmp/drawers.wids/
+TMPDIR="$XDG_RUNTIME_DIR/drawers.wids/"
 
 # Find and show/hide the window if it exists
 # ==========================================
