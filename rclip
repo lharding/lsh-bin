@@ -96,7 +96,7 @@ case $OP in
         else
             printf "\nevent: %s\nid: %s\ntime: %s\nmeta: %s\n" "$EVENT" "$ID" "$DATE" "$*" >> $LOG_FILE
             tee $CLIP_FILE | sed "$MUNGE" >> $LOG_FILE
-            printf "\n" >> $LOG_FILE
+            printf "\n\n" >> $LOG_FILE
         fi
     ;;    
     local_get) cat $CLIP_FILE;;
@@ -121,7 +121,7 @@ case $OP in
             cat
             printf "\n"
         else
-            printf "`tput smso`    %s | %s | id=%s   `tput rmso`\n%s\n\n" "$TIME" "$META" "$ID" "$DATA"
+            printf "`tput -T xterm smso`    %s | %s | id=%s   `tput -T xterm rmso`\n%s\n\n" "$TIME" "$META" "$ID" "$DATA"
         fi
     ;;
     *) echo "Unrecognized subcommand $OP"; exit 1
