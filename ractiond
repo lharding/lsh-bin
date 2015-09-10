@@ -8,61 +8,66 @@ shift
 
 case $OP in
     handle)
-        echo "handling handle"
-        if which raction-local &> /dev/null && raction-local $@; then exit; fi
-        echo "not cancelled by raction-local"
+        echo "`logdate`: Processing $EVENT..."
 
         if [[ -n $ID ]]; then printf "%s" "$ID" > $LAST_EVENT_FILE; fi
 
         if (printf "_%s" "$META" | grep -qi 'host:'`hostname`) || (printf "_%s" "$META" | grep -qiv 'host:\w'); then
-            echo "we are the target host"
-            case $EVENT in
-                poke)
-                    (
-                       USE_LEDS=true
-                       # don't blink if a horrible busted PS/2->USB adapter is present
-                       if lsusb | grep -qi PCPlay; then USE_LEDS=false; fi
-    
-                        rm "$POKED_FILE" &> /dev/null
-                        NID='none'
-                        echo "handling poke."
-                        while ! [ -f $POKED_FILE ]; do
-                            # constantly recreate notification, for maximum annoyance
-                            NID=$(notify-desktop -r $NID -u critical "<b>** INCOMING POKE **</b><br><br>$DATA")
-                            $USE_LEDS && xset led 3
-                            sleep 0.5
-                            $USE_LEDS && xset -led 3
-                            sleep 0.25
-                        done
-                        notify-desktop -r $NID -t 100 "going away now."
-                    ) &
-                ;;
+            echo "    we are the target host"
+        
+            if which raction-local &> /dev/null && raction-local $@; then exit; else
+                echo "    Not cancelled by raction-local."
+                case $EVENT in
+                    poke)
+                        (
+                           USE_LEDS=true
+                           # don't blink if a horrible busted PS/2->USB adapter is present
+                           if lsusb | grep -qi PCPlay; then USE_LEDS=false; fi
+        
+                            rm "$POKED_FILE" &> /dev/null
+                            NID='none'
+                            while ! [ -f $POKED_FILE ]; do
+                                # constantly recreate notification, for maximum annoyance
+                                NID=$(notify-desktop -r $NID -u critical "<b>** INCOMING POKE **</b><br><br>$DATA")
+                                $USE_LEDS && xset led 3
+                                sleep 0.5
+                                $USE_LEDS && xset -led 3
+                                sleep 0.25
+                            done
+                            notify-desktop -r $NID -t 100 "going away now." > /dev/null
+                        ) &
+                    ;;
 
-                poked)
-                    echo "handling poked"
-                    date +%s.+N > $POKED_FILE
-                ;;
+                    poked)
+                        date +%s.+N > $POKED_FILE
+                    ;;
 
-                note)
-                    printf "%s: %s" "$TIME" "$DATA" >> writing/notes.txt
-                    notify-desktop -t 0 "$DATA"
-                ;;
+                    note)
+                        printf "%s: %s" "$TIME" "$DATA" >> writing/notes.txt
+                        notify-desktop -t 0 "$DATA" > /dev/null
+                    ;;
 
-                tasksync) task sync;;
-                badtunnel) killall badtunnel; (badtunnel &);;
-                *) printf "Unrecognized event '%s'." >&2 ;;
-            esac
+                    tasksync) task sync;;
+                    badtunnel) killall badtunnel; (badtunnel &);;
+                    ack) printf "    Got ack: %s, %s\n" "$META" "$DATA";;
+                    *) printf "    Unrecognized event '%s'." >&2 ;;
+                esac
+            fi
+            if [[ $EVENT != 'ack' ]]; then
+                raction ack "$ID"
+            fi
         fi
     ;;
     start)
         while true; do
             $0 run $@
-            echo "connection lost at `logdate`, reconnecting..." >&2
+            echo "`logdate`: connection lost at, reconnecting..." >&2
         done
     ;;
     run)
         read AFTER < $LAST_EVENT_FILE
-        echo "AFTER=$AFTER; Running: $0 handle $@"
+        [[ -z $AFTER ]] && AFTER=`date +%s.%N`
+        echo "AFTER=$AFTER"
         #TODO: sane defaults for rclip tail
         rclip -c actions tail -raw -after $AFTER -n +0 -f | decode-es $0 handle $@
     ;;
