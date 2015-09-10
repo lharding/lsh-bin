@@ -2,7 +2,8 @@
 
 # Setup
 LOCAL_CMD=$0
-REMOTE_CMD="ssh lsh.io bash --login rclip"
+# forcing tty allocation on the remote end makes the processes die when the connection ends, which we want.
+REMOTE_CMD="ssh -tt lsh.io bash --login rclip"
 CMD_ARGS=""
 FEEDBACK_CMD="true"
 
