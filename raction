@@ -3,7 +3,7 @@
 EVENT=$1
 shift
 
-META="from:$USER"
+META="from:$USER@`hostname`"
 case $1 in
     '-M')
         META="$2"
