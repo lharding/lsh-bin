@@ -1,9 +1,8 @@
 #!/bin/bash
 
-IFS=''
+IFS=$'\n'
 function extract_field() {
     printf "%s" "$PACKET" | grep "^$1: \\?" | sed "s/^$1: \\?//g"
-
 }
 
 AFTER=''
