@@ -1,0 +1,24 @@
+#!/bin/bash
+
+EVENT=$1
+shift
+
+META="from:$USER"
+case $1 in
+    '-M')
+        META="$2"
+        shift 2
+    ;;
+    '-m')
+        META+=" $2"
+        shift 2
+    ;;
+esac
+
+if [[ $1 == '-' ]]; then
+    DATA=`cat`
+else
+    DATA=$@
+fi
+
+printf "%s" "$DATA" | rclip -c actions put -e $EVENT $META
