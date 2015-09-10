@@ -33,7 +33,7 @@ fi
 # ============================================================
 
 # only first screen for now
-read SCR_WIDTH SCR_HEIGHT SCR_LEFT SCR_TOP < <(xrandr | grep -m 1 ' connected' | scut 2 | tr 'x+' '  ')
+read SCR_WIDTH SCR_HEIGHT SCR_LEFT SCR_TOP < <(xrandr | grep -m 1 'primary' | scut 3 | tr 'x+' '  ')
 
 SIDE=$2
 WIDTH=$3
