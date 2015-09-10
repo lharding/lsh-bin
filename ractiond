@@ -43,12 +43,14 @@ case $OP in
                     ;;
 
                     note)
-                        printf "%s: %s" "$TIME" "$DATA" >> writing/notes.txt
+                        printf "%s: %s" "$TIME" "$DATA" >> $HOME/writing/notes.txt
                         notify-desktop -t 0 "$DATA" > /dev/null
                     ;;
 
                     tasksync) task sync;;
-                    badtunnel) killall badtunnel; (badtunnel &);;
+                    badtunnel)
+                        killall badtunnel;
+                        (nohup badtunnel > $HOME/.cache/badtunnel.log) &;;
                     ack) printf "    Got ack: %s, %s\n" "$META" "$DATA";;
                     *) printf "    Unrecognized event '%s'." >&2 ;;
                 esac
