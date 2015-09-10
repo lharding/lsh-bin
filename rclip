@@ -82,11 +82,19 @@ case $OP in
     local_put)
 	DATE=`logdate`
         ID=`date '+%s.%N'`
+        EVENT='clip'
+
+        #TODO: non-brittle arg handling
+        if [[ $1 == '-e' ]]; then
+            EVENT=$2
+            shift 2
+        fi
+
         MUNGE='s/^\(.*\)$/data: \1/'
 	if [[ $1 == '-a' ]]; then
             tee -a $CLIP_FILE | sed "$MUNGE" >> $LOG_FILE
         else
-            printf "\nid: %s\ntime: %s\nmeta: %s\n" "$ID" "$DATE" "$*" >> $LOG_FILE
+            printf "\nevent: %s\nid: %s\ntime: %s\nmeta: %s\n" "$EVENT" "$ID" "$DATE" "$*" >> $LOG_FILE
             tee $CLIP_FILE | sed "$MUNGE" >> $LOG_FILE
             printf "\n" >> $LOG_FILE
         fi
