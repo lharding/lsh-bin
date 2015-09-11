@@ -111,7 +111,7 @@ case $OP in
         US=$$
         FIFO="/tmp/rclip_fifo_$US"
         mkfifo $FIFO
-        trap "echo trapped; echo > $FIFO; rm $FIFO; kill $US" EXIT
+        trap "echo > $FIFO; rm $FIFO; kill -9 $US" EXIT
         (cat $FIFO | $REMOTE_CMD local_tail $@;) &
         while true; do sleep 999999; done
     ;;
