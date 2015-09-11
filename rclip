@@ -62,7 +62,7 @@ case $OP in
     put) $REMOTE_CMD local_put $@;;
     get) $REMOTE_CMD local_get $@;;
     note) echo -e "$@" | $LOCAL_CMD put -a;;
-    tail) $REMOTE_CMD_FOR_TAIL local_tail $@;;
+#    tail) $REMOTE_CMD_FOR_TAIL local_tail $@;;
     io)
         $LOCAL_CMD tail $@ &
         while read MSG; do
@@ -105,7 +105,15 @@ case $OP in
             shift
         fi
 
-        tail $@ $LOG_FILE | decode-es $AFTER $LOCAL_CMD handle_packet $RAW $@
+        (tail $@ $LOG_FILE & read; kill $!) | decode-es $AFTER $LOCAL_CMD handle_packet $RAW $@
+    ;;
+    tail)
+        US=$$
+        FIFO="/tmp/rclip_fifo_$US"
+        mkfifo $FIFO
+        trap "echo trapped; echo > $FIFO; rm $FIFO; kill $US" EXIT
+        (cat $FIFO | $REMOTE_CMD local_tail $@;) &
+        while true; do sleep 999999; done
     ;;
     handle_packet)
         if [[ $1 == '-raw' ]]; then
