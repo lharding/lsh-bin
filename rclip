@@ -2,8 +2,8 @@
 
 # Setup
 LOCAL_CMD=$0
-# forcing tty allocation on the remote end makes the processes die when the connection ends, which we want.
-REMOTE_CMD="ssh -tt lsh.io bash --login rclip"
+REMOTE_CMD="ssh lsh.io bash --login rclip"
+REMOTE_CMD_FOR_TAIL="ssh -t -t lsh.io bash --login rclip"
 CMD_ARGS=""
 FEEDBACK_CMD="true"
 
@@ -11,20 +11,10 @@ FEEDBACK_CMD="true"
 
 CLIP_BASE="$HOME/rclip"
 
-#USAGE: havearg arg $@
-function havearg() {
-    NEED=$1
-    shift
-    while [[ -n $1 ]]; do 
-        [[ $1 == $NEED ]] && return 0
-        shift
-        done
-    return 1
-}       
-
 # parse args
 while [[ -n $1 ]]; do
     ARG=$1
+    echo "Found arg: $ARG"
     shift
     case $ARG in
         '-c') 
@@ -39,6 +29,8 @@ while [[ -n $1 ]]; do
         ;;
     esac
 done
+
+echo "clip is $CLIP_NAME"
 
 CLIP_FILE="${CLIP_BASE}${CLIP_NAME}.clip"
 LOG_FILE="${CLIP_BASE}${CLIP_NAME}.log"
@@ -72,7 +64,7 @@ case $OP in
     put) $REMOTE_CMD local_put $@;;
     get) $REMOTE_CMD local_get $@;;
     note) echo -e "$@" | $LOCAL_CMD put -a;;
-    tail) $REMOTE_CMD local_tail $@;;
+    tail) $REMOTE_CMD_FOR_TAIL local_tail $@;;
     io)
         $LOCAL_CMD tail $@ &
         while read MSG; do
