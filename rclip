@@ -14,7 +14,6 @@ CLIP_BASE="$HOME/rclip"
 # parse args
 while [[ -n $1 ]]; do
     ARG=$1
-    echo "Found arg: $ARG"
     shift
     case $ARG in
         '-c') 
@@ -30,8 +29,6 @@ while [[ -n $1 ]]; do
     esac
 done
 
-echo "clip is $CLIP_NAME"
-
 CLIP_FILE="${CLIP_BASE}${CLIP_NAME}.clip"
 LOG_FILE="${CLIP_BASE}${CLIP_NAME}.log"
 
@@ -46,6 +43,7 @@ esac
 
 LOCAL_CMD+=$CMD_ARGS
 REMOTE_CMD+=$CMD_ARGS
+REMOTE_CMD_FOR_TAIL+=$CMD_ARGS
 
 # actually do anything
 case $OP in
