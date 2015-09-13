@@ -1,0 +1,5 @@
+#!/bin/sh
+REPFILE="$XDG_RUNTIME_DIR/amixer_notify_id"
+read REPID < $REPFILE
+[[ -z $REPID ]] && REPID='none'
+notify-desktop -r $REPID -a 'Volume' "<b>$(amixer $@ | tail -1 | grep -o '[0-9]\+.*$')</b>" > $REPFILE
