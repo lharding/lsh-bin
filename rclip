@@ -92,6 +92,13 @@ case $OP in
     ;;    
     local_get) cat $CLIP_FILE;;
     local_tail)
+        if [[ $1 == '--flow-control' ]]; then
+            FLOW=true
+            shift
+        else
+            FLOW=false
+        fi
+
         if [[ $1 == '-raw' ]]; then
             RAW=$1
             shift
@@ -105,15 +112,28 @@ case $OP in
             shift
         fi
 
-        (tail $@ $LOG_FILE & read; kill $!) | decode-es $AFTER $LOCAL_CMD handle_packet $RAW $@
+        TAIL="tail $@ $LOG_FILE"
+
+        if $FLOW; then
+            # Flow control support: listen for a newline to be sent to our stdin, and kill our tail
+            # command if it's still running. The while loop just hangs around checking to see if the
+            # tail command has exited on its own yet.
+            ( $TAIL &
+              while kill -s 0 $! &> /dev/null; do 
+                read -t 1 && kill $! && exit
+              done
+            )
+        else
+            $TAIL
+        fi | decode-es $AFTER $LOCAL_CMD handle_packet $RAW $@
     ;;
     tail)
-        US=$$
-        FIFO="/tmp/rclip_fifo_$US"
-        mkfifo $FIFO
-        trap "echo > $FIFO; rm $FIFO; kill -9 $US" EXIT
-        (cat $FIFO | $REMOTE_CMD local_tail $@;) &
-        while true; do sleep 999999; done
+        # Because ssh can't clean up after itself correctly in absence of a pty, we need a mechanism
+        # to signal the remote tail -f command to terminate manually. So, we run the remote command
+        # in a coprocess and send a single newline to the remote end when we exit.
+        coproc $REMOTE_CMD local_tail --flow-control $@
+        trap "echo >&${COPROC[1]}; kill $COPROC_PID" EXIT
+        cat <&"${COPROC[0]}"
     ;;
     handle_packet)
         if [[ $1 == '-raw' ]]; then
