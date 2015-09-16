@@ -19,7 +19,7 @@ case $OP in
         if (printf "_%s" "$ES_FIELD_META" | grep -qi 'host:'`hostname`) || (printf "_%s" "$ES_FIELD_META" | grep -qiv 'host:\w'); then
             echo "    we are the target host"
         
-            if which raction-local &> /dev/null && raction-local $@; then exit; else
+            if which ractiond-local &> /dev/null && ractiond-local $@; then exit; else
                 echo "    Not cancelled by raction-local."
                 case $ES_FIELD_EVENT in
                     poke)
