@@ -22,6 +22,7 @@ while [[ -n $1 ]]; do
             shift
         ;;
         '--test')
+            echo "*** RCLIP TEST MODE ACTIVE, USING LOCALHOST AS SERVER ***"
             REMOTE_CMD="ssh localhost bash --login rclip"
         ;;
         *) 
