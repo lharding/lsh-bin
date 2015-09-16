@@ -3,5 +3,5 @@ if [ -z $DISPLAY ] || ! (xset -q > /dev/null); then
     exit 1
 else
     [[ '--test' == $1 ]] && exit
-    notify-send $@
+    notify-desktop $@
 fi
