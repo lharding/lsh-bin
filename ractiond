@@ -47,7 +47,7 @@ case $OP in
                     ;;
 
                     note)
-                        printf "%s: %s" "$ES_FIELD_TIME" "$ES_FIELD_DATA" >> $HOME/writing/notes.txt
+                        printf "%s: %s\n" "$ES_FIELD_TIME" "$ES_FIELD_DATA" >> $HOME/writing/notes.txt
                         feedback -t 0 "$ES_FIELD_DATA" > /dev/null
                     ;;
 
