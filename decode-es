@@ -23,7 +23,10 @@ fields = {}
 packet = []
 handler = None
 f = None
-stdin = sys.stdin
+
+#Reopen stdin with no buffering
+stdin = os.fdopen(sys.stdin.fileno(), 'r', 0)
+sys.stdin = stdin
 
 def cleanup(signal=None, stack=None):
     f and f.kill()
