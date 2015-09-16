@@ -93,6 +93,7 @@ def process_packet():
                 print "\n".join(lines)
 
             print "\n"
+	    sys.stdout.flush()
         else:
             print raw+"\n"
             sys.stdout.flush()
