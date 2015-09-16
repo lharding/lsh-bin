@@ -11,6 +11,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-f", action="count", help="Follow (as with tail -F)")
 parser.add_argument("-i", help="Read this file instead of stdin")
 parser.add_argument("-flow", action="count", help="Exit on recieving any stdin as a workaround for ssh's child proc handling.")
+parser.add_argument("-munge", action="count", help="Munge output to workaround webkit's non-compliant EventSource support.")
 parser.add_argument("-n", type=int, help="Instead of tailing, process nth event from end of file (requires -f)")
 parser.add_argument("-after", type=float, help="Process only events newer than this")
 parser.add_argument("command", nargs=argparse.REMAINDER, help="Command to invoke to parse a packet.")
@@ -78,6 +79,20 @@ def process_packet():
             handler.stdin.close()
             handler.wait()
             handler = None
+        elif args.munge:
+            if not 'id' in fields: fields['id']=''
+            if not 'event' in fields: fields['event']=''
+            if not 'data' in fields: fields['data']=''
+
+            for key, val in fields.items():
+                if key.lower() in ['id', 'event']:
+                    lines = [key+': '+line for line in val]
+                else:
+                    lines = ['data: '+key+': '+line for line in val]
+
+                print "\n".join(lines)
+
+            print "\n"
         else:
             print raw+"\n"
             sys.stdout.flush()
