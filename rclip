@@ -84,14 +84,17 @@ case $OP in
             shift 2
         fi
 
-        MUNGE='s/^\(.*\)$/data: \1/'
-	if [[ $1 == '-a' ]]; then
-            tee -a $CLIP_FILE | sed "$MUNGE" >> $LOG_FILE
-        else
-            printf "\nevent: %s\nid: %s\ntime: %s\nmeta: %s\n" "$EVENT" "$ID" "$DATE" "$*" >> $LOG_FILE
-            tee $CLIP_FILE | sed "$MUNGE" >> $LOG_FILE
-            printf "\n\n" >> $LOG_FILE
-        fi
+        (
+            flock 200
+            MUNGE='s/^\(.*\)$/data: \1/'
+            if [[ $1 == '-a' ]]; then
+                tee -a $CLIP_FILE | sed "$MUNGE" >> $LOG_FILE
+            else
+                printf "\nevent: %s\nid: %s\ntime: %s\nmeta: %s\n" "$EVENT" "$ID" "$DATE" "$*" >> $LOG_FILE
+                tee $CLIP_FILE | sed "$MUNGE" >> $LOG_FILE
+                printf "\n\n" >> $LOG_FILE
+            fi
+        ) 200> "/tmp/rclip.${USER}.${CLIP_NAME}.lock"
     ;;    
     local_get) cat $CLIP_FILE;;
     local_tail)
