@@ -62,15 +62,22 @@ case $OP in
     ;;
     start)
         while true; do
-            $0 run $@
-            echo "`logdate`: connection lost at, reconnecting..." >&2
+            diewithparent $0 run $@
+            echo "`logdate`: connection lost, reconnecting in 3s..." >&2
+            sleep 3
         done
     ;;
     run)
         read AFTER < $LAST_EVENT_FILE
         [[ -z $AFTER ]] && AFTER=`date +%s.%N`
         echo "AFTER=$AFTER"
-        #TODO: sane defaults for rclip tail
-        rclip -c actions tail -raw -after $AFTER -n +0 -f | decode-es $0 handle $@
+
+        if [[ '-local' == $1 ]]; then
+            ACTION='local_tail'
+        else
+            ACTION='tail'
+        fi
+
+        diewithparent rclip --test -c actions $ACTION -raw -after $AFTER -f | decode-es $0 handle $@
     ;;
 esac

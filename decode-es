@@ -1,36 +1,124 @@
-#!/bin/bash
+#!/usr/bin/python2
+import os
+import sys
+import subprocess
+import atexit
+import signal
+import argparse
+import select
 
-IFS=$'\n'
-function extract_field() {
-    printf "%s" "$PACKET" | grep "^$1: \\?" | sed "s/^$1: \\?//g"
-}
+parser = argparse.ArgumentParser()
+parser.add_argument("-f", action="count", help="Follow (as with tail -F)")
+parser.add_argument("-i", help="Read this file instead of stdin")
+parser.add_argument("-flow", action="count", help="Exit on recieving any stdin as a workaround for ssh's child proc handling.")
+parser.add_argument("-n", type=int, help="Instead of tailing, process nth event from end of file (requires -f)")
+parser.add_argument("-after", type=float, help="Process only events newer than this")
+parser.add_argument("command", nargs=argparse.REMAINDER, help="Command to invoke to parse a packet.")
 
-AFTER=''
-if [[ $1 == '-after' ]]; then
-    shift
-    #munge ids into a form we can do string comparison on:
-    AFTER=`printf "%024.9f" "$1"`
-    shift
-fi
+args = parser.parse_args()
 
-while read LINE; do
-    if [[ -z $LINE ]]; then
-        if [[ -n $PACKET ]]; then
-            export EVENT=$(extract_field event)            
-            export ID=$(extract_field id)
-            export TIME=$(extract_field 'time')
-            export META=$(extract_field meta)
-            export DATA=$(extract_field data)
+#### SETUP ####
 
-            if ([[ -z $ID$AFTER ]] || [[ `printf "%024.9f" "$ID"` > $AFTER ]]) &&\
-                [[ -n $EVENT$ID$TIME$META$DATA ]]; then
-                
-                printf "%s" "$PACKET" | $@;
-            fi
-        fi    
-        PACKET=''
-    else
-        PACKET+="$LINE"
-        PACKET+=$'\n'
-    fi
-done
+fields = {}
+packet = []
+handler = None
+f = None
+stdin = sys.stdin
+
+def cleanup(signal=None, stack=None):
+    f and f.kill()
+    handler and handler.kill()
+    exit()
+
+atexit.register(cleanup)
+for s in [signal.SIGINT, signal.SIGTERM, signal.SIGQUIT]: signal.signal(s, cleanup)
+
+#### PACKET PROCESSING ####
+
+def process_input_line(line):
+    parts = line.split(':', 1)
+
+    field = parts[0]
+    if len(parts) == 2:
+        value = parts[1].strip()
+    else:
+        value = ''
+
+    if not field in fields:
+        fields[field] = []
+
+    fields[field].append(value)
+
+def process_packet():
+    process = True
+
+    if args.after:
+        if 'id' in fields:
+            eid = float(fields['id'][0])
+            process &= eid > args.after
+        else:
+            process = False
+
+    if process:
+        raw = "\n".join(packet)
+        
+        if args.command:
+            env = os.environ.copy()
+
+            for key, val in fields.items():
+                env['ES_FIELD_'+key.upper()] = "\n".join(val)
+
+            env['ES_FIELDS'] = ' '.join([ key.upper() for key in fields.keys() ])
+
+            handler = subprocess.Popen(args.command, stdin=subprocess.PIPE, env=env)
+            handler.stdin.write(raw)
+            handler.stdin.close()
+            handler.wait()
+            handler = None
+        else:
+            print raw+"\n"
+
+#### INPUT PROCESSING ####
+
+if args.f and args.i: 
+    f = subprocess.Popen(['tail','-F', '-n', '+0', args.i],\
+            stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    stdin = f.stdout
+elif args.i:
+    stdin = open(args.i, 'r')
+
+if args.f and args.n:
+    print "Follow (-f) and n-th-from-end (-n) don't make sense together."
+    exit()
+elif args.n:
+    packets = [p for p in stdin.read().split("\n\n") if p.strip()]
+    pin = str(packets[-args.n]).split("\n")  # process_packet expects an array of lines
+    packet = pin
+    for line in pin:
+        process_input_line(line)
+    process_packet()
+else:
+    while not stdin.closed:
+        ins = select.select([sys.stdin, stdin], [], [])
+
+        if stdin != sys.stdin and args.flow and sys.stdin in ins[0]:
+            print "Munching stdin."
+            # if we don't read what's on stdin, the shell will get it
+#            while sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
+#                sys.stdin.read(1)
+            print "Got flow control"
+            exit()
+        
+        if stdin in ins[0]:
+            line=stdin.readline()
+            if not line: exit() # EOF = done here
+
+            line=line.strip()
+            if line:
+                packet.append(line)
+                process_input_line(line)
+            elif len(fields) > 0:
+                process_packet()
+
+                fields={}
+                packet=[]

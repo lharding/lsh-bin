@@ -3,7 +3,6 @@
 # Setup
 LOCAL_CMD=$0
 REMOTE_CMD="ssh lsh.io bash --login rclip"
-REMOTE_CMD_FOR_TAIL="ssh -t -t lsh.io bash --login rclip"
 CMD_ARGS=""
 FEEDBACK_CMD="true"
 
@@ -21,6 +20,9 @@ while [[ -n $1 ]]; do
             CLIP_BASE+="."
             CMD_ARGS+=" -c $CLIP_NAME"
             shift
+        ;;
+        '--test')
+            REMOTE_CMD="ssh localhost bash --login rclip"
         ;;
         *) 
             OP=$ARG
@@ -92,56 +94,30 @@ case $OP in
     ;;    
     local_get) cat $CLIP_FILE;;
     local_tail)
-        if [[ $1 == '--flow-control' ]]; then
-            FLOW=true
-            shift
-        else
-            FLOW=false
-        fi
+        HANDLE='rclip handle_packet'
+        ARGS=''
+        #TODO: better arg handling
+        while true; do case $1 in
+            '-flow') shift; FLOW='-flow';;
+            '-raw') shift; HANDLE=;;
+            *) break;;
+        esac done
 
-        if [[ $1 == '-raw' ]]; then
-            RAW=$1
-            shift
-        fi
-
-        AFTER=
-        #TODO: non-brittle arg handling
-        if [[ $1 == '-after' ]]; then
-            shift
-            AFTER="-after $1"
-            shift
-        fi
-
-        TAIL="tail $@ $LOG_FILE"
-
-        if $FLOW; then
-            # Flow control support: listen for a newline to be sent to our stdin, and kill our tail
-            # command if it's still running. The while loop just hangs around checking to see if the
-            # tail command has exited on its own yet.
-            ( $TAIL &
-              while kill -s 0 $! &> /dev/null; do 
-                read -t 1 && kill $! && exit
-              done
-            )
-        else
-            $TAIL
-        fi | decode-es $AFTER $LOCAL_CMD handle_packet $RAW $@
+        exec decode-es -i $LOG_FILE $FLOW $@ $HANDLE
     ;;
     tail)
         # Because ssh can't clean up after itself correctly in absence of a pty, we need a mechanism
         # to signal the remote tail -f command to terminate manually. So, we run the remote command
         # in a coprocess and send a single newline to the remote end when we exit.
-        coproc $REMOTE_CMD local_tail --flow-control $@
-        trap "echo >&${COPROC[1]}; kill $COPROC_PID" EXIT
+        coproc $REMOTE_CMD local_tail -flow $@
+        trap "{
+            printf "\n" >&${COPROC[1]}
+            kill $COPROC_PID &> /dev/null
+        }" EXIT
         cat <&"${COPROC[0]}"
     ;;
     handle_packet)
-        if [[ $1 == '-raw' ]]; then
-            cat
-            printf "\n"
-        else
-            printf "`tput -T xterm smso`    %s | %s | id=%s   `tput -T xterm rmso`\n%s\n\n" "$TIME" "$META" "$ID" "$DATA"
-        fi
+        printf "`tput -T xterm smso`    %s | %s | id=%s   `tput -T xterm rmso`\n%s\n\n" "$ES_FIELD_TIME" "$ES_FIELD_META" "$ES_FIELD_ID" "$ES_FIELD_DATA"
     ;;
     *) echo "Unrecognized subcommand $OP"; exit 1
 esac
