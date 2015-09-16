@@ -80,6 +80,7 @@ def process_packet():
             handler = None
         else:
             print raw+"\n"
+            sys.stdout.flush()
 
 #### INPUT PROCESSING ####
 
