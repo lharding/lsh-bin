@@ -23,7 +23,7 @@ case $OP in
                 echo "    Not cancelled by raction-local."
                 case $ES_FIELD_EVENT in
                     poke)
-                        (
+                       feedback --test && (
                            USE_LEDS=true
                            # don't blink if a horrible busted PS/2->USB adapter is present
                            if lsusb | grep -qi PCPlay; then USE_LEDS=false; fi
@@ -32,13 +32,13 @@ case $OP in
                             NID='none'
                             while ! [ -f $POKED_FILE ]; do
                                 # constantly recreate notification, for maximum annoyance
-                                NID=$(notify-desktop -r $NID -u critical "<b>** INCOMING POKE **</b><br><br>$ES_FIELD_DATA")
+                                NID=$(feedback -r $NID -u critical "<b>** INCOMING POKE **</b><br><br>$ES_FIELD_DATA")
                                 $USE_LEDS && xset led 3
                                 sleep 0.5
                                 $USE_LEDS && xset -led 3
                                 sleep 0.25
                             done
-                            notify-desktop -r $NID -t 100 "going away now." > /dev/null
+                            feedback -r $NID -t 100 "going away now." > /dev/null
                         ) &
                     ;;
 
@@ -48,7 +48,7 @@ case $OP in
 
                     note)
                         printf "%s: %s" "$ES_FIELD_TIME" "$ES_FIELD_DATA" >> $HOME/writing/notes.txt
-                        notify-desktop -t 0 "$ES_FIELD_DATA" > /dev/null
+                        feedback -t 0 "$ES_FIELD_DATA" > /dev/null
                     ;;
 
                     tasksync) task sync;;
