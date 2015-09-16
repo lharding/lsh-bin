@@ -8,16 +8,20 @@ shift
 
 case $OP in
     handle)
-        echo "`logdate`: Processing $EVENT..."
+        echo "`logdate`: Processing $ES_FIELD_EVENT..."
 
-        if [[ -n $ID ]]; then printf "%s" "$ID" > $LAST_EVENT_FILE; fi
+        if [[ -n $ES_FIELD_ID ]]; 
+            then printf "%s" "$ES_FIELD_ID" > $LAST_EVENT_FILE; 
+        else
+            echo "Warning: got event with no ID." >&2
+        fi
 
-        if (printf "_%s" "$META" | grep -qi 'host:'`hostname`) || (printf "_%s" "$META" | grep -qiv 'host:\w'); then
+        if (printf "_%s" "$ES_FIELD_META" | grep -qi 'host:'`hostname`) || (printf "_%s" "$ES_FIELD_META" | grep -qiv 'host:\w'); then
             echo "    we are the target host"
         
             if which raction-local &> /dev/null && raction-local $@; then exit; else
                 echo "    Not cancelled by raction-local."
-                case $EVENT in
+                case $ES_FIELD_EVENT in
                     poke)
                         (
                            USE_LEDS=true
@@ -28,7 +32,7 @@ case $OP in
                             NID='none'
                             while ! [ -f $POKED_FILE ]; do
                                 # constantly recreate notification, for maximum annoyance
-                                NID=$(notify-desktop -r $NID -u critical "<b>** INCOMING POKE **</b><br><br>$DATA")
+                                NID=$(notify-desktop -r $NID -u critical "<b>** INCOMING POKE **</b><br><br>$ES_FIELD_DATA")
                                 $USE_LEDS && xset led 3
                                 sleep 0.5
                                 $USE_LEDS && xset -led 3
@@ -43,22 +47,23 @@ case $OP in
                     ;;
 
                     note)
-                        printf "%s: %s" "$TIME" "$DATA" >> $HOME/writing/notes.txt
-                        notify-desktop -t 0 "$DATA" > /dev/null
+                        printf "%s: %s" "$ES_FIELD_TIME" "$ES_FIELD_DATA" >> $HOME/writing/notes.txt
+                        notify-desktop -t 0 "$ES_FIELD_DATA" > /dev/null
                     ;;
 
                     tasksync) task sync;;
                     badtunnel)
                         killall badtunnel;
                         (nohup badtunnel > $HOME/.cache/badtunnel.log) &;;
-                    ack) printf "    Got ack: %s, %s\n" "$META" "$DATA";;
+                    ack) printf "    Got ack: %s %s\n" "$ES_FIELD_META" "$ES_FIELD_DATA";;
                     *) printf "    Unrecognized event '%s'." >&2 ;;
                 esac
             fi
-            if [[ $EVENT != 'ack' ]]; then
-                raction ack "$ID"
+            if [[ $ES_FIELD_EVENT != 'ack' ]]; then
+                raction ack "$ES_FIELD_ID"
             fi
         fi
+        echo "Done processing $ES_FIELD_EVENT"
     ;;
     start)
         while true; do
@@ -78,6 +83,6 @@ case $OP in
             ACTION='tail'
         fi
 
-        diewithparent rclip --test -c actions $ACTION -raw -after $AFTER -f | decode-es $0 handle $@
+        diewithparent rclip -c actions $ACTION -raw -after $AFTER -f | decode-es $0 handle $@
     ;;
 esac
