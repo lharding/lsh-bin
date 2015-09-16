@@ -4,9 +4,6 @@
 LOCAL_CMD=$0
 REMOTE_CMD="ssh lsh.io bash --login rclip"
 CMD_ARGS=""
-FEEDBACK_CMD="true"
-
-[[ -e `which notify-send` ]] && [[ -n $DISPLAY ]] && FEEDBACK_CMD="notify-send -a rclip"
 
 CLIP_BASE="$HOME/rclip"
 
@@ -51,16 +48,16 @@ REMOTE_CMD_FOR_TAIL+=$CMD_ARGS
 # actually do anything
 case $OP in
     copy) 
-        $FEEDBACK_CMD "starting upload of $SELECTION"
+        feedback "starting upload of $SELECTION"
         (xclip -o -selection $SELECTION | $LOCAL_CMD put $@ &&\
-        $FEEDBACK_CMD "uploaded $SELECTION") ||\
-        $FEEDBACK_CMD "failed to upload"
+        feedback "uploaded $SELECTION") ||\
+        feedback "failed to upload"
     ;;
     paste)
-        $FEEDBACK_CMD "starting download of $SELECTION"
+        feedback "starting download of $SELECTION"
         ($LOCAL_CMD get $@ | xclip -i -selection $SELECTION &&\
-        $FEEDBACK_CMD "downloaded clip to $SELECTION") ||\
-        $FEEDBACK_CMD "failed to download."
+        feedback "downloaded clip to $SELECTION") ||\
+        feedback "failed to download."
     ;;
     put) $REMOTE_CMD local_put $@;;
     get) $REMOTE_CMD local_get $@;;
