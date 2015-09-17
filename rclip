@@ -81,13 +81,23 @@ case $OP in
             shift 2
         fi
 
+        CUSTOM=''
+        while [[ -n $1 ]]; do
+            ARG=$1
+            shift
+            case $ARG in
+                '-e') EVENT=$1; shift;;
+                '-f') CUSTOM+="$1"$'\n'; shift;;
+            esac
+        done
+
         (
             flock 200
             MUNGE='s/^\(.*\)$/data: \1/'
             if [[ $1 == '-a' ]]; then
                 tee -a $CLIP_FILE | sed "$MUNGE" >> $LOG_FILE
             else
-                printf "\nevent: %s\nid: %s\ntime: %s\nmeta: %s\n" "$EVENT" "$ID" "$DATE" "$*" >> $LOG_FILE
+                printf "\nevent: %s\nid: %s\ntime: %s\nmeta: %s\n%s" "$EVENT" "$ID" "$DATE" "$*" "$CUSTOM" >> $LOG_FILE
                 tee $CLIP_FILE | sed "$MUNGE" >> $LOG_FILE
                 printf "\n\n" >> $LOG_FILE
             fi

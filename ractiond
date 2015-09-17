@@ -16,7 +16,7 @@ case $OP in
             echo "Warning: got event with no ID." >&2
         fi
 
-        if (printf "_%s" "$ES_FIELD_META" | grep -qi 'host:'`hostname`) || (printf "_%s" "$ES_FIELD_META" | grep -qiv 'host:\w'); then
+        if [[ -z "$ES_FIELD_HOST" ]] || printf "%s" "$ES_FIELD_HOST" | grep -qi "`hostname`"; then
             echo "    we are the target host"
         
             if which ractiond-local &> /dev/null && ractiond-local $@; then exit; else
