@@ -80,10 +80,6 @@ def process_packet():
             handler.wait()
             handler = None
         elif args.munge:
-            if not 'id' in fields: fields['id']=''
-            if not 'event' in fields: fields['event']=''
-            if not 'data' in fields: fields['data']=''
-
             for key, val in fields.items():
                 if key.lower() in ['id', 'event']:
                     lines = [key+': '+line for line in val]
@@ -93,10 +89,10 @@ def process_packet():
                 print "\n".join(lines)
 
             print "\n"
-	    sys.stdout.flush()
         else:
             print raw+"\n"
-            sys.stdout.flush()
+        
+        sys.stdout.flush()
 
 #### INPUT PROCESSING ####
 
