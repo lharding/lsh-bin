@@ -15,7 +15,13 @@ CATEGORY=''
 while getopts "r:u:t:a:i:c:x:h" opt; do
     case $opt in
         r) REPLACE="$OPTARG" ;;
-        u) URGENCY="$OPTARG" ;;
+        u) case $OPTARG in
+            low) URGENCY=0 ;;
+            normal) URGENCY=1 ;;
+            critical) URGENCY=2 ;;
+            0|1|2) URGENCY=$OPTARG;;
+            *) echo "Warning: unknown urgency level $OPTARG" >&2;;
+        esac;;
         t) EXPIRE="$OPTARG" ;;
         a) APP_NAME="$OPTARG" ;;
         i) ICON="$OPTARG" ;;
@@ -24,6 +30,9 @@ while getopts "r:u:t:a:i:c:x:h" opt; do
         h) echo "Here, just read the source."; cat $0; ;;
     esac
 done
+
+# Never expire critical notifications
+[[ $URGENCY == 2 ]] && EXPIRE=0
 
 shift $((OPTIND-1))
 
@@ -45,5 +54,5 @@ string:"$ICON" \
 string:"$SUMMARY" \
 string:"$BODY" \
 array:string:'' \
-dict:string:string:'','' \
+dict:string:byte:'urgency',$URGENCY \
 int32:"$EXPIRE" | scut 2
