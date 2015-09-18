@@ -1,16 +1,49 @@
-#!/bin/python2
-# What it's come to: we can't even write a wrapper script in bash
+#!/bin/bash
+if [[ '--test' == $1 ]]; then
+    if [[ -n $DISPLAY ]] && xset -q &> /dev/null; then exit; else exit 1; fi
+fi
 
-import subprocess
-import os
-import sys
+REPLACE='0'
+URGENCY='normal'
+EXPIRE='10000'
+APP_NAME='feedback'
+ICON=''
+SUMMARY=''
+BODY=''
+CATEGORY=''
 
-if sys.argv[1] == '--test':
-    # Exception handling baroquery because it's not possible to redirect to dev null in python
-    # Why am I torturing myself with this joke language again?
-    try:
-        subprocess.check_output(['xset', '-q'], stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError as pythonSucks:
-        exit(pythonSucks.returncode)
-else:
-    exit(subprocess.call(['notify-desktop']+sys.argv[1:]))
+while getopts "r:u:t:a:i:c:x:h" opt; do
+    case $opt in
+        r) REPLACE="$OPTARG" ;;
+        u) URGENCY="$OPTARG" ;;
+        t) EXPIRE="$OPTARG" ;;
+        a) APP_NAME="$OPTARG" ;;
+        i) ICON="$OPTARG" ;;
+        c) CATEGORY="$OPTARG" ;;
+        x) echo "Hints not implemented yet." >&2; exit 1 ;;
+        h) echo "Here, just read the source."; cat $0; ;;
+    esac
+done
+
+shift $((OPTIND-1))
+
+if [[ -z $1 ]]; then
+    echo "Must as least give a summary!" >&2
+    exit 1
+fi
+
+SUMMARY="$1"
+shift
+
+BODY="$@"
+
+dbus-send --print-reply=literal --type=method_call --dest='org.freedesktop.Notifications' \
+/org/freedesktop/Notifications org.freedesktop.Notifications.Notify \
+string:"$APP_NAME" \
+uint32:"$REPLACE" \
+string:"$ICON" \
+string:"$SUMMARY" \
+string:"$BODY" \
+array:string:'' \
+dict:string:string:'','' \
+int32:"$EXPIRE" | scut 2
