@@ -1,58 +1,58 @@
-#!/bin/bash
-if [[ '--test' == $1 ]]; then
-    if [[ -n $DISPLAY ]] && xset -q &> /dev/null; then exit; else exit 1; fi
-fi
+#!/usr/bin/env python
+import dbus
+import argparse
+import sys
 
-REPLACE='0'
-URGENCY='normal'
-EXPIRE='10000'
-APP_NAME='feedback'
-ICON=''
-SUMMARY=''
-BODY=''
-CATEGORY=''
+item              = "org.freedesktop.Notifications"
+path              = "/org/freedesktop/Notifications"
+interface         = "org.freedesktop.Notifications"
 
-while getopts "r:u:t:a:i:c:x:h" opt; do
-    case $opt in
-        r) REPLACE="$OPTARG" ;;
-        u) case $OPTARG in
-            low) URGENCY=0 ;;
-            normal) URGENCY=1 ;;
-            critical) URGENCY=2 ;;
-            0|1|2) URGENCY=$OPTARG;;
-            *) echo "Warning: unknown urgency level $OPTARG" >&2;;
-        esac;;
-        t) EXPIRE="$OPTARG" ;;
-        a) APP_NAME="$OPTARG" ;;
-        i) ICON="$OPTARG" ;;
-        c) CATEGORY="$OPTARG" ;;
-        x) echo "Hints not implemented yet." >&2; exit 1 ;;
-        h) echo "Here, just read the source."; cat $0; ;;
-    esac
-done
+if len(sys.argv) > 1 and sys.argv[1] == '--test':
+    import subprocess
+    # Exception handling baroquery because it's not possible to redirect to dev null in python
+    # Why am I torturing myself with this joke language again?
+    try:
+        subprocess.check_output(['xset', '-q'], stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as pythonSucks:
+        exit(pythonSucks.returncode)
+    exit()
 
-# Never expire critical notifications
-[[ $URGENCY == 2 ]] && EXPIRE=0
+parser = argparse.ArgumentParser("Post a desktop notification")
+parser.add_argument("-r", help="ID of notification to replace", default=0)
+parser.add_argument("-u", help="Urgency level (low|0|normal|1|critical|2", default='1')
+parser.add_argument("-t", help="Msec until notification expires", type=int, default=8000)
+parser.add_argument("-a", help="Application name (defaults to 'feedback')", default="feedback")
+parser.add_argument("-i", help="Icon path", default="")
+parser.add_argument("-c", help="Notification category", default="")
+parser.add_argument("summary", help="Summary of the notification.", default="")
+parser.add_argument("body", nargs=argparse.REMAINDER, help="Body of the notification.", default="")
 
-shift $((OPTIND-1))
+args = parser.parse_args()
 
-if [[ -z $1 ]]; then
-    echo "Must as least give a summary!" >&2
-    exit 1
-fi
+urgency = {
+    'low': 0,
+    'normal': 1,
+    'critical': 2,
+    '0': 0,
+    '1': 1,
+    '2': 2
+}[args.u]
 
-SUMMARY="$1"
-shift
+body = " ".join(args.body)
+try:
+    replace = int(args.r)
+except ValueError:
+    replace = 0
 
-BODY="$@"
-
-dbus-send --print-reply=literal --type=method_call --dest='org.freedesktop.Notifications' \
-/org/freedesktop/Notifications org.freedesktop.Notifications.Notify \
-string:"$APP_NAME" \
-uint32:"$REPLACE" \
-string:"$ICON" \
-string:"$SUMMARY" \
-string:"$BODY" \
-array:string:'' \
-dict:string:byte:'urgency',$URGENCY \
-int32:"$EXPIRE" | scut 2
+bus = dbus.SessionBus()
+notif = bus.get_object(item, path)
+notify = dbus.Interface(notif, interface)
+print( notify.Notify(
+ args.a,
+ replace,
+ args.i, 
+ args.summary,
+ body, 
+ [], # actions as pairs of 'action', 'Human name', ...
+ dbus.Dictionary({'urgency': dbus.Byte(urgency), 'category': args.c}, signature='sv'),
+ args.t))
