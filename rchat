@@ -1,0 +1,32 @@
+#!/bin/bash
+
+HL="`tput smso`"
+UNHL="`tput rmso`"
+AFTER=$((`date +%s`-60*60*24))
+
+case $1 in
+    '--handle')
+        case $ES_FIELD_EVENT in
+            'ack') ;;
+            *)
+                printf "$HL $ES_FIELD_EVENT from $ES_FIELD_FROM at ${ES_FIELD_TIME}: $UNHL\n%s\n\n" "$ES_FIELD_DATA"
+            ;;
+        esac
+        exit
+    ;;
+    '--nowrap')
+        (rclip -c actions tail -raw -after $AFTER -f | decode-es $0 --handle) &
+        while read INITIAL LINE; do
+            case $INITIAL in
+                /*)
+                    printf "%s" "$LINE" | raction `echo "$INITIAL" | sed 's,/,,'` -
+                ;;
+                *)
+                    printf "%s %s" "$INITIAL $LINE" | raction chat -;
+                ;;
+            esac
+        done
+    ;;
+esac
+
+srw $0 --nowrap
