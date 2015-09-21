@@ -20,7 +20,7 @@ if len(sys.argv) > 1 and sys.argv[1] == '--test':
 parser = argparse.ArgumentParser("Post a desktop notification")
 parser.add_argument("-r", help="ID of notification to replace", default=0)
 parser.add_argument("-u", help="Urgency level (low|0|normal|1|critical|2", default='1')
-parser.add_argument("-t", help="Msec until notification expires", type=int, default=8000)
+parser.add_argument("-t", help="Msec until notification expires", type=int, default=-1)
 parser.add_argument("-a", help="Application name (defaults to 'feedback')", default="feedback")
 parser.add_argument("-i", help="Icon path", default="")
 parser.add_argument("-c", help="Notification category", default="")
