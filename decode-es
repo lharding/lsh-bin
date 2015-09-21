@@ -97,7 +97,7 @@ def process_packet():
 #### INPUT PROCESSING ####
 
 if args.f and args.i: 
-    f = subprocess.Popen(['tail','-F', '-n', '+0', args.i],\
+    f = subprocess.Popen(['diewithparent', 'tail','-F', '-n', '+0', args.i],\
             stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     stdin = f.stdout
 elif args.i:
