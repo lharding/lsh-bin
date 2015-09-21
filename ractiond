@@ -51,7 +51,9 @@ case $OP in
                         feedback -t 0 "$ES_FIELD_DATA" > /dev/null
                     ;;
 
-                    tasksync) task sync;;
+                    task-sync) 
+                        feedback -a "Tasklist" "Remote update, running sync..."
+                        task sync;;
                     badtunnel)
                         killall badtunnel;
                         (nohup badtunnel > $HOME/.cache/badtunnel.log) &;;
