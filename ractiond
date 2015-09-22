@@ -54,7 +54,7 @@ case $OP in
                     task-sync) 
                         ADDS=$(printf "%s" "$ES_FIELD_DATA" | jq '.added[] | "\(.project) \(.description)"')
                         MODS=$(printf "%s" "$ES_FIELD_DATA" | jq '.modified[] | "\(.status) \(.project) \(.description)"')
-                        feedback -a "Tasklist" "Remote update, running sync..." "Added:\n$ADDS\n\nModified:\n$MODS"
+                        feedback -a "Tasklist" "Remote update, running sync..." "<b>Added:</b>\n$ADDS\n\n<b>Modified:</b>\n$MODS"
                         task sync
                         killall -USR1 tasknc #make any running tasknc's refresh
                     ;;
