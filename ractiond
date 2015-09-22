@@ -52,9 +52,9 @@ case $OP in
                     ;;
 
                     task-sync) 
-                        BODY=$(printf "added:\n%s" "$ES_FIELD_DATA" | jq '.added[] | "\(.project) \(.description)"')
-                        BODY+=$(printf "modified:\n%s" "$ES_FIELD_DATA" | jq '.modified[] | "\(.status) \(.project) \(.description)"')
-                        feedback -a "Tasklist" "Remote update, running sync..." "$ES_FIELD_DATA"                    
+                        ADDS=$(printf "%s" "$ES_FIELD_DATA" | jq '.added[] | "\(.project) \(.description)"')
+                        MODS=$(printf "%s" "$ES_FIELD_DATA" | jq '.modified[] | "\(.status) \(.project) \(.description)"')
+                        feedback -a "Tasklist" "Remote update, running sync..." "Added:<br>$ADDS<br><br>Modified:<br>$MODS"
                         task sync
                         killall -USR1 tasknc #make any running tasknc's refresh
                     ;;
