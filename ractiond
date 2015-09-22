@@ -52,8 +52,12 @@ case $OP in
                     ;;
 
                     task-sync) 
-                        feedback -a "Tasklist" "Remote update, running sync..."
-                        task sync;;
+                        BODY=$(printf "added:\n%s" "$ES_FIELD_DATA" | jq '.added[] | "\(.project) \(.description)"')
+                        BODY+=$(printf "modified:\n%s" "$ES_FIELD_DATA" | jq '.modified[] | "\(.status) \(.project) \(.description)"')
+                        feedback -a "Tasklist" "Remote update, running sync..." "$ES_FIELD_DATA"                    
+                        task sync
+                        killall -USR1 tasknc #make any running tasknc's refresh
+                    ;;
                     badtunnel)
                         killall badtunnel;
                         (nohup badtunnel > $HOME/.cache/badtunnel.log) &;;
