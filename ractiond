@@ -62,7 +62,7 @@ case $OP in
                         killall badtunnel;
                         (nohup badtunnel > $HOME/.cache/badtunnel.log) &;;
                     ack) printf "    Got ack: %s %s\n" "$ES_FIELD_META" "$ES_FIELD_DATA";;
-                    *) printf "    Unrecognized event '%s'." >&2 ;;
+                    *) printf "    Unrecognized event '%s'.\n" "$ES_FIELD_EVENT" >&2 ;;
                 esac
             fi
             if [[ $ES_FIELD_EVENT != 'ack' ]]; then
