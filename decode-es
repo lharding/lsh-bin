@@ -114,8 +114,13 @@ elif args.n:
         process_input_line(line)
     process_packet()
 else:
+    if stdin != sys.stdin and args.flow:
+        streams = [sys.stdin, stdin]
+    else:
+        streams = [stdin]
+
     while not stdin.closed:
-        ins = select.select([sys.stdin, stdin], [], [])
+        ins = select.select(streams, [], [])
 
         if stdin != sys.stdin and args.flow and sys.stdin in ins[0]:
             print "Munching stdin."
@@ -125,7 +130,7 @@ else:
             print "Got flow control"
             exit()
         
-        if stdin in ins[0]:
+        elif stdin in ins[0]:
             line=stdin.readline()
             if not line: exit() # EOF = done here
 
@@ -138,3 +143,9 @@ else:
 
                 fields={}
                 packet=[]
+
+        else:
+            sys.stderr.write("??? select gave us something impossible: ")  
+            for inp in ins[0]:
+                sys.stderr.write(inp.read(1000))
+            sys.stderr.write("\n")
