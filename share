@@ -55,7 +55,9 @@ if [[ "-local" == "$1" ]]; then
     fi
 else
     if [[ "get" != "$1" ]] && [[ "-" != "$1" ]]; then
-        $REMOTE_CMD $0 -local -n `basename "$1"` $@ < "$1"
+        IN_FILE="$1"
+        shift
+        $REMOTE_CMD $0 -local -n `basename "$IN_FILE"` $@ < "$IN_FILE"
     else
         $REMOTE_CMD $0 -local $@
     fi
