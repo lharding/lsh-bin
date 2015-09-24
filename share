@@ -37,7 +37,7 @@ if [[ "-local" == "$1" ]]; then
     OUT_FILE="$FILENAME"
 
     while [[ -z "$OVERWRITE" ]] && [[ -s `fullpath "$OUT_FILE"` ]]; do
-        OUT_FILE="share_`randstr`_$FILE_NAME"
+        OUT_FILE="share_`randstr`_$FILENAME"
     done
 
     cat > "`fullpath $OUT_FILE`"
