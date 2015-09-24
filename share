@@ -17,6 +17,12 @@ urlpath() {
 if [[ "-local" == "$1" ]]; then
     shift
 
+    if [[ "get" == "$1" ]]; then
+        echo "Getting `fullpath $2`" >&2
+        cat "`fullpath $2`"
+        exit
+    fi
+    
     while getopts 'pqefn:b' opt; do
         case $opt in
             p) DIR_SUFFIX=".pub";;
@@ -28,10 +34,6 @@ if [[ "-local" == "$1" ]]; then
     done
     shift $OPTIND
 
-    if [[ "get" == "$1" ]]; then
-        cat "`fullpath $2`"
-        exit
-    fi
 
     [[ -z "$FILENAME" ]] && FILENAME=`randstr`
     OUT_FILE="$FILENAME"
@@ -51,7 +53,7 @@ if [[ "-local" == "$1" ]]; then
     echo "$RESULT"
 
     if [[ "true" != "$QUIET" ]]; then
-        raction upload "$RESULT" > /dev/null
+        raction upload -f "url:`urlpath $OUT_FILE`" "$OUT_FILE" > /dev/null
     fi
 else
     if [[ "get" != "$1" ]] && [[ "-" != "$1" ]]; then
