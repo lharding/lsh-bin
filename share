@@ -1,0 +1,62 @@
+#!/bin/sh
+
+DEST_DIR="$HOME/share"
+DIR_SUFFIX=".priv"
+
+SSH="ssh lsh.io"
+REMOTE_CMD="$SSH bash --login"
+
+fullpath() {
+    echo "$DEST_DIR$DIR_SUFFIX/$@"
+}
+
+urlpath() {
+    echo "https://lsh.io:3000/share$DIR_SUFFIX/$@"
+}
+
+if [[ "-local" == "$1" ]]; then
+    shift
+
+    while getopts 'pqef:n:b' opt; do
+        case $opt in
+            p) DIR_SUFFIX=".pub";;
+            q) QUIET=true;;
+            n) FILENAME="$OPTARG";;
+            b) BARE=true;;
+            f) OVERWRITE=true;;
+        esac
+    done
+    shift $OPTIND
+
+    if [[ "get" == "$1" ]]; then
+        cat "`fullpath $2`"
+        exit
+    fi
+
+    [[ -z "$FILENAME" ]] && FILENAME=`randstr`
+    OUT_FILE="$FILENAME"
+
+    while [[ -z "$OVERWRITE" ]] && [[ -s `fullpath "$OUT_FILE"` ]]; do
+        OUT_FILE="share_`randstr`_$FILE_NAME"
+    done
+
+    cat > "`fullpath $OUT_FILE`"
+
+    if [[ "true" == "$BARE" ]]; then
+        RESULT="$OUT_FILE"
+    else
+        RESULT="$(urlpath $OUT_FILE)"
+    fi
+
+    echo "$RESULT"
+
+    if [[ "true" != "$QUIET" ]]; then
+        raction upload "$RESULT" > /dev/null
+    fi
+else
+    if [[ "get" != "$1" ]] && [[ "-" != "$1" ]]; then
+        $REMOTE_CMD $0 -local -n `basename "$1"` $@
+    else
+        $REMOTE_CMD $0 -local $@
+    fi
+fi
