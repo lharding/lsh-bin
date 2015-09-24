@@ -1,2 +1,3 @@
 #!/bin/sh
-cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1
+if [ -z $1 ]; then CNT="8"; else CNT="$1"; fi
+cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w "$CNT" | head -n 1

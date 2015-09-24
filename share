@@ -17,7 +17,7 @@ urlpath() {
 if [[ "-local" == "$1" ]]; then
     shift
 
-    while getopts 'pqef:n:b' opt; do
+    while getopts 'pqefn:b' opt; do
         case $opt in
             p) DIR_SUFFIX=".pub";;
             q) QUIET=true;;
@@ -55,7 +55,7 @@ if [[ "-local" == "$1" ]]; then
     fi
 else
     if [[ "get" != "$1" ]] && [[ "-" != "$1" ]]; then
-        $REMOTE_CMD $0 -local -n `basename "$1"` $@
+        $REMOTE_CMD $0 -local -n `basename "$1"` $@ < "$1"
     else
         $REMOTE_CMD $0 -local $@
     fi
