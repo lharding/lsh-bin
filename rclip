@@ -101,6 +101,8 @@ case $OP in
                 tee $CLIP_FILE | sed "$MUNGE" >> $LOG_FILE
                 printf "\n\n" >> $LOG_FILE
             fi
+            
+            echo "$ID"
         ) 200> "/tmp/rclip.${USER}.${CLIP_NAME}.lock"
     ;;    
     local_get) cat $CLIP_FILE;;

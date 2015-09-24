@@ -51,12 +51,18 @@ case $OP in
                         feedback -t 0 "$ES_FIELD_DATA" > /dev/null
                     ;;
 
-                    tasksync) task sync;;
+                    task-sync) 
+                        ADDS=$(printf "%s" "$ES_FIELD_DATA" | jq '.added[] | "\(.project) \(.description)"')
+                        MODS=$(printf "%s" "$ES_FIELD_DATA" | jq '.modified[] | "\(.status) \(.project) \(.description)"')
+                        feedback -a "Tasklist" "Remote update, running sync..." "<b>Added:</b>\n$ADDS\n\n<b>Modified:</b>\n$MODS"
+                        task sync
+                        killall -USR1 tasknc #make any running tasknc's refresh
+                    ;;
                     badtunnel)
                         killall badtunnel;
                         (nohup badtunnel > $HOME/.cache/badtunnel.log) &;;
                     ack) printf "    Got ack: %s %s\n" "$ES_FIELD_META" "$ES_FIELD_DATA";;
-                    *) printf "    Unrecognized event '%s'." >&2 ;;
+                    *) printf "    Unrecognized event '%s'.\n" "$ES_FIELD_EVENT" >&2 ;;
                 esac
             fi
             if [[ $ES_FIELD_EVENT != 'ack' ]]; then

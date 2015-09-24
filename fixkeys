@@ -15,4 +15,4 @@ else
     xmodmap -e 'remove mod1 = Alt_L' -e 'keycode 64 = Super_L'
 fi
 
-notify-send "Keys remapped."
+feedback "Keys remapped."
