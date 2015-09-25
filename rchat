@@ -1,8 +1,10 @@
 #!/bin/bash
 
-HL="\033[1;34m"
-EHL="\033[1;31m"
-UNHL="\033[00m"
+if [ -t 1 ]; then
+    HL="\033[1;34m"
+    EHL="\033[1;31m"
+    UNHL="\033[00m"
+fi
 
 case $1 in
     '--handle')
