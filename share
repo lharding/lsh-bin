@@ -57,7 +57,7 @@ if [[ "-local" == "$1" ]]; then
         raction upload $FROM -f "url:`urlpath $OUT_FILE`" "$OUT_FILE" > /dev/null
     fi
 else
-    FROM="-u $USER@$HOST"
+    FROM="-u $USER@$HOSTNAME"
     if [[ "get" != "$1" ]] && [[ "-" != "$1" ]]; then
         IN_FILE="$1"
         shift
