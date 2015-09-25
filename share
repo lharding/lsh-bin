@@ -23,13 +23,14 @@ if [[ "-local" == "$1" ]]; then
         exit
     fi
     
-    while getopts 'pqefn:b' opt; do
+    while getopts 'pqefn:bu:' opt; do
         case $opt in
             p) DIR_SUFFIX=".pub";;
             q) QUIET=true;;
             n) FILENAME="$OPTARG";;
             b) BARE=true;;
             f) OVERWRITE=true;;
+	    u) FROM="-from $OPTARG";;
         esac
     done
     shift $OPTIND
@@ -53,14 +54,15 @@ if [[ "-local" == "$1" ]]; then
     echo "$RESULT"
 
     if [[ "true" != "$QUIET" ]]; then
-        raction upload -f "url:`urlpath $OUT_FILE`" "$OUT_FILE" > /dev/null
+        raction upload $FROM -f "url:`urlpath $OUT_FILE`" "$OUT_FILE" > /dev/null
     fi
 else
+    FROM="-u $USER@$HOST"
     if [[ "get" != "$1" ]] && [[ "-" != "$1" ]]; then
         IN_FILE="$1"
         shift
-        $REMOTE_CMD $0 -local -n `basename "$IN_FILE"` $@ < "$IN_FILE"
+        $REMOTE_CMD $0 -local $FROM -n `basename "$IN_FILE"` $@ < "$IN_FILE"
     else
-        $REMOTE_CMD $0 -local $@
+        $REMOTE_CMD $0 -local $FROM $@
     fi
 fi
