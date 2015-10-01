@@ -22,7 +22,7 @@ case $1 in
                     printf "%s" "$LINE" | raction `echo "$INITIAL" | sed 's,/,,'` -
                 ;;
                 *)
-                    printf "%s %s" "$INITIAL $LINE" | raction chat -;
+                    printf "%s %s" "$INITIAL $LINE" | raction chat - > /dev/null
                 ;;
             esac
         done
