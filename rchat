@@ -1,21 +1,34 @@
 #!/bin/bash
 
-HL="`tput smso`"
-UNHL="`tput rmso`"
-AFTER=$((`date +%s`-60*60*24))
+if [ -t 1 ]; then
+    HL="\033[1;34m"
+    EHL="\033[1;31m"
+    UNHL="\033[00m"
+fi
 
 case $1 in
     '--handle')
         case $ES_FIELD_EVENT in
             'ack') ;;
-            *)
-                printf "$HL $ES_FIELD_EVENT from $ES_FIELD_FROM at ${ES_FIELD_TIME}: $UNHL\n%s\n\n" "$ES_FIELD_DATA"
+            *)                
+                EDATE="${ES_FIELD_TIME:4}"
+                printf "$HL$ES_FIELD_EVENT from ${ES_FIELD_FROM%%@*} at ${EDATE%% *}: $UNHL\n%s\n\n" "$ES_FIELD_DATA"
             ;;
         esac
+        echo "$ES_FIELD_ID" > "$AFTER_FILE"
         exit
     ;;
     '--nowrap')
-        (rclip -c actions tail -raw -after $AFTER -f | decode-es $0 --handle) &
+        export AFTER_FILE="/tmp/rchat_after_$$"
+        echo "$((`date +%s`-60*60*24))" > $AFTER_FILE
+        SELF=$$
+        (
+            while true; do
+                rclip -c actions tail -raw -after `cat $AFTER_FILE` -f | decode-es $0 --handle
+                printf "${EHL}Connection lost. Reconnecting...$UNHL"
+            done
+            kill "$SELF"
+        ) &
         while read INITIAL LINE; do
             case $INITIAL in
                 /*)
@@ -24,7 +37,7 @@ case $1 in
                 *)
                     printf "%s %s" "$INITIAL $LINE" | raction chat - > /dev/null
                 ;;
-            esac
+            esac > /dev/null
         done
     ;;
 esac
