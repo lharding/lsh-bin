@@ -80,7 +80,7 @@ case $OP in
     ;;
     run)
         read AFTER < $LAST_EVENT_FILE
-        [[ -z $AFTER ]] && AFTER=`date +%s.%N`
+        [[ -z "$AFTER" ]] && AFTER=`date +%s.%N`
         echo "AFTER=$AFTER"
 
         if [[ '-local' == $1 ]]; then
