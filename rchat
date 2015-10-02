@@ -41,7 +41,7 @@ case $1 in
                     printf "%s" "$LINE" | raction "${FOO:1}" -
                 ;;
                 *)
-                    printf "%s %s" "$INITIAL $LINE" | raction chat -
+                    printf "%s %s" "$INITIAL $LINE" | raction chat - > /dev/null
                 ;;
             esac > /dev/null
         done
