@@ -1,7 +1,8 @@
 #!/bin/bash
 
 if [ -t 1 ]; then
-    HL="\033[1;34m"
+    OHL="\033[1;34m"
+    MHL="\033[1;30m"
     EHL="\033[1;31m"
     UNHL="\033[00m"
 fi
@@ -11,6 +12,11 @@ case $1 in
         case $ES_FIELD_EVENT in
             'ack') ;;
             *)                
+                if [[ "$ES_FIELD_FROM" == *"$USER"* ]]; then
+                    HL=$MHL
+                else
+                    HL=$OHL
+                fi
                 EDATE="${ES_FIELD_TIME:4}"
                 printf "$HL$ES_FIELD_EVENT from ${ES_FIELD_FROM%%@*} at ${EDATE%% *}: $UNHL\n%s\n\n" "$ES_FIELD_DATA"
             ;;
@@ -25,17 +31,17 @@ case $1 in
         (
             while true; do
                 rclip -c actions tail -raw -after `cat $AFTER_FILE` -f | decode-es $0 --handle
-                printf "${EHL}Connection lost. Reconnecting...$UNHL"
+                printf "${EHL}Connection lost. Reconnecting...$UNHL\n"
             done
             kill "$SELF"
         ) &
         while read INITIAL LINE; do
             case $INITIAL in
                 /*)
-                    printf "%s" "$LINE" | raction `echo "$INITIAL" | sed 's,/,,'` -
+                    printf "%s" "$LINE" | raction "${FOO:1}" -
                 ;;
                 *)
-                    printf "%s %s" "$INITIAL $LINE" | raction chat -;
+                    printf "%s %s" "$INITIAL $LINE" | raction chat -
                 ;;
             esac > /dev/null
         done
