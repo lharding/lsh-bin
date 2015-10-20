@@ -1,0 +1,32 @@
+#!/bin/sh
+
+TIME=
+while [ -n "$1" ]; do
+    ARG="$1"
+    COUNT=$(echo $ARG | grep -o '[0-9]\+')
+    
+    case "$ARG" in
+        *s) TIME=$(($TIME+$COUNT));;
+        *m) TIME=$(($TIME+60*$COUNT));;
+        *h) TIME=$(($TIME+60*60*$COUNT));;
+        *d) echo "I recommend a cronjob."; exit 1;;
+        *) break;
+    esac
+
+    shift
+done
+
+if [ 0 -eq "$TIME" ]; then
+    echo "I'm sure you didn't mean to set a timer zero seconds from now." >&2
+    exit 1
+fi
+
+MESSAGE="Time."
+DONE_CMD='feedback -u critical "$MESSAGE"'
+case "$1" in
+    -r) shift; DONE_CMD="raction poke $@";;
+    -c) shift; DONE_CMD=$@;;
+    *) MESSAGE="$@";;
+esac
+
+( (echo "Timer set for $TIME seconds from now. PID=$$"; sleep $TIME && eval "$DONE_CMD"; echo "Timer $$ done." >&2 )& )&
