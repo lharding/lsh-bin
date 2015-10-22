@@ -47,11 +47,9 @@ case $OP in
                     ;;
 
                     chat)
-                        feedback "Chat from $ES_FIELD_FROM" "$ES_FIELD_DATA"
-                    ;;
-
-                    stfu)
-                        amixer set Master mute
+                        if ! printf "%s" "$ES_FIELD_FROM" | grep -qi "$USER@`hostname`"; then
+                            feedback "Chat from $ES_FIELD_FROM" "$ES_FIELD_DATA"
+                        fi
                     ;;
 
                     note)
