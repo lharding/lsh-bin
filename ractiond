@@ -46,6 +46,14 @@ case $OP in
                         date +%s.+N > $POKED_FILE
                     ;;
 
+                    chat)
+                        feedback "Chat from $ES_FIELD_FROM" "$ES_FIELD_DATA"
+                    ;;
+
+                    stfu)
+                        amixer set Master mute
+                    ;;
+
                     note)
                         printf "%s: %s\n" "$ES_FIELD_TIME" "$ES_FIELD_DATA" >> $HOME/writing/notes.txt
                         feedback -t 0 "$ES_FIELD_DATA" > /dev/null
