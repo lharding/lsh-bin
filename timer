@@ -21,11 +21,12 @@ if [ 0 -eq "$TIME" ]; then
     exit 1
 fi
 
-MESSAGE="Time."
+MESSAGE="Timer $$ done."
 DONE_CMD='feedback -u critical "$MESSAGE"'
 case "$1" in
     -r) shift; DONE_CMD="raction poke $@";;
     -c) shift; DONE_CMD=$@;;
+    '') ;; # so we don't make MESSAGE empty with no args
     *) MESSAGE="$@";;
 esac
 
