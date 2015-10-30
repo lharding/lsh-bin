@@ -6,11 +6,15 @@ import sys
 onMarkdown = False
 markdownBlock = ""
 
+def printMarkdownBlock():
+    if onMarkdown:
+        global markdownBlock
+        sys.stdout.write(markdown2.markdown(markdownBlock))
+        markdownBlock = ""
+
 for line in sys.stdin:
     if line.startswith('<<<<'):
-        if onMarkdown:
-            sys.stdout.write(markdown2.markdown(markdownBlock))
-            markdownBlock = ""
+        printMarkdownBlock()
 
         onMarkdown = not onMarkdown
     else:
@@ -18,3 +22,6 @@ for line in sys.stdin:
             markdownBlock += line
         elif line is not None:
             sys.stdout.write(line)
+
+# we might still have some pending markdown:
+printMarkdownBlock()
