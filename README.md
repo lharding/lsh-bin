@@ -49,6 +49,14 @@ Use zsh `vared` and `logdate` to append a timestamped line to `~/writing/notes.t
 
 Just runs `mknote` in a loop, for e.g. keeping a drawer term to collect and show notes.
 
+### obsess
+
+Repeatedly run a command at a specified frequency, clearing the terminal before each execution. 
+
+Usage: `obsess DELAY COMMAND...`
+
+`DELAY` is the (floating point) number of seconds between invokations of `COMMAND`. Try `obsess 1 date` if it's not clear what this script is for.
+
 ### rclip
 
 Remote clipboard with logging; replaces Pocket, Pinboard, etc with a very small shell script.
