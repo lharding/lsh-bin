@@ -38,7 +38,7 @@ case $1 in
         while read INITIAL LINE; do
             case $INITIAL in
                 /*)
-                    printf "%s" "$LINE" | raction "${FOO:1}" -
+                    printf "%s" "$LINE" | raction "${INITIAL:1}" -
                 ;;
                 *)
                     printf "%s %s" "$INITIAL $LINE" | raction chat - > /dev/null
