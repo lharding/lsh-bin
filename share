@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 DEST_DIR="$HOME/share"
 DIR_SUFFIX=".priv"

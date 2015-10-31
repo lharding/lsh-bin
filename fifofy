@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/bin/sh
 
-TMPFILE="/tmp/fifofy-`(head /dev/random; date) | md5sum | scut 0`"
+TMPFILE="/tmp/fifofy-`(head /dev/urandom; date) | md5sum | scut 0`"
 MODE=$1
 
 shift
@@ -41,5 +41,5 @@ case $MODE in
     ;;
 esac
 
-[[ -e $INFIFO ]] && rm $INFIFO
-[[ -e $OUTFIFO ]] && rm $OUTFIFO
+[ -e $INFIFO ] && rm $INFIFO
+[ -e $OUTFIFO ] && rm $OUTFIFO

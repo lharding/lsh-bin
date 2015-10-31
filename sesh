@@ -1,7 +1,8 @@
 #!/bin/bash
 
 CACHE="$HOME/.cache/sesh.state"
-function munge() {
+echo "Using cache file $CACHE"
+munge() {
     sed 's/Inbox ([,0-9]\+).\+@gmail.com//' | sed 's/^[^|]\+| \(.*Slack.*\)/\1/' | sed 's/([^)]\+)//g'
 }
 
@@ -12,7 +13,7 @@ case $1 in
             TITLE=`echo $WIN | scut 1-$ | munge`
             DESK=`echo $WIN | scut 0`
             echo "Moving to $DESK: $TITLE"
-            [[ $1 == '-n' ]] || wmctrl -r "$TITLE" -t $DESK
+            [ "$1" = '-n' ] || wmctrl -r "$TITLE" -t $DESK
         done
         echo "State loaded."
     ;;

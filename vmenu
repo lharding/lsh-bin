@@ -1,6 +1,6 @@
 #!/bin/sh
 #dmenu $@ -l 50 -i -nb '#000000' -sb '#202020' -nf '#ff00ff' -sf '#ffeeff'
-if [[ $1 == '--no-refocus' ]]; then
+if [ "$1" = '--no-refocus' ]; then
     NOFOCUS=1
     shift
 fi

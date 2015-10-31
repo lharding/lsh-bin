@@ -8,9 +8,9 @@ Fair warning: these are [shop built jigs](http://robnapier.net/go-is-a-shop-buil
 
 ### backup
 
-Perform an rsync backup to 192.168.1.254:backup/$HOST (hardcoded, sorry).
+Perform an rsync backup to `$DSTHOST:backup/$HOST`.
 
-Usage: `backup home` or `backup full`
+Usage: `backup home DSTHOST` or `backup full DSTHOST`
 
 ### bringwindow
 
