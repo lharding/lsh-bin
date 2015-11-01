@@ -1,6 +1,6 @@
 #!/bin/sh
 
-TIME=
+TIME=0
 while [ -n "$1" ]; do
     ARG="$1"
     COUNT=$(echo $ARG | grep -o '[0-9]\+')
@@ -21,6 +21,8 @@ if [ 0 -eq "$TIME" ]; then
     exit 1
 fi
 
+FINISH_TIME=$(date --date=@$(($(date +%s)+$TIME)))
+
 MESSAGE="Timer $$ done."
 DONE_CMD='feedback -u critical "$MESSAGE"'
 case "$1" in
@@ -30,4 +32,8 @@ case "$1" in
     *) MESSAGE="$@";;
 esac
 
-( (echo "Timer set for $TIME seconds from now. PID=$$"; sleep $TIME && eval "$DONE_CMD"; echo "Timer $$ done." >&2 )& )&
+( (
+    echo "Timer set for $TIME seconds from now ($FINISH_TIME). PID=$$";
+    sleep $TIME && eval "$DONE_CMD";
+    echo "Timer $$ done." >&2
+)& )&
