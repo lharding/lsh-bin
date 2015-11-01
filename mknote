@@ -1,4 +1,4 @@
-#!/bin/zsh
-    NOTE="`logdate`: "
-    vared NOTE
-    echo "$NOTE" >> ~/writing/notes.txt
+#!/bin/bash
+NOTE="`logdate`: "
+read -e -i "$NOTE" NOTE
+echo "it was $NOTE" >> ~/writing/notes.txt

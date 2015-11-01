@@ -43,7 +43,7 @@ Output the current time in `YYYYMMDD:HHMM.SS (epoch+UNIXTIME)` format.
 
 ### mknote
 
-Use zsh `vared` and `logdate` to append a timestamped line to `~/writing/notes.txt`.
+Read and append a (editably, if interactive) timestamped line to `~/writing/notes.txt`.
 
 ### noteloop
 
