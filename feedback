@@ -27,7 +27,23 @@ parser.add_argument("-c", help="Notification category", default="")
 parser.add_argument("summary", help="Summary of the notification.", default="")
 parser.add_argument("body", nargs=argparse.REMAINDER, help="Body of the notification.", default="")
 
-args = parser.parse_args()
+try:
+    args = parser.parse_args()
+except SystemExit as ex:
+    class NS(dict): 
+        def __getattr__(self, name): 
+            return self[name] 
+
+    args = NS({
+        'u': '2',
+        'body': sys.argv,
+        'r': 0,
+        'a': 'feedback',
+        'summary': 'Invalid invocation of feedback:',
+        'c': 'error',
+        't': -1,
+        'i': ''
+    })
 
 urgency = {
     'low': 0,
