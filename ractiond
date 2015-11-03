@@ -96,5 +96,6 @@ case $OP in
         fi
 
         diewithparent rclip -c actions $ACTION -raw -after $AFTER -f | decode-es $0 handle $@
+        ping -c 1 lsh.io && feedback "ractiond connection lost, reconnecting in 3s."
     ;;
 esac
