@@ -1,0 +1,13 @@
+#!/bin/sh
+
+fname="$1"
+
+while [ ! -e "$fname" ] && [ "/" != "$PWD" ]; do
+    cd ..
+done
+
+if [ -e "$fname" ]; then
+    echo "$PWD/$fname"
+else
+    exit 1
+fi

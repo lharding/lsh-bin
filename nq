@@ -1,0 +1,42 @@
+#!/bin/env bash
+
+queueFile=`projfile nqfile`
+if [[ "-f" == "$1" ]]; then
+    echo "Using queuefile $queueFile" >&2
+    queueFile="$2"
+    shift 2
+fi
+
+op="$1"
+
+cmd() {
+    head -n 1 "$queueFile"
+}
+
+peek() {
+    chomped=$(tail -n +2 "$queueFile")
+    [[ -z "$chomped" ]] && exit 1
+    printf "%s" "$chomped" | head -n 1
+}
+
+pop() {
+    peek
+    printf "%s\n%s" "$(cmd)" "$(tail -n +3 "$queueFile")" > "$queueFile"
+}
+
+next() {
+    action=$(cmd)
+    item=$(pop) || exit 1        
+    eval "$(printf "%s" "$action" | sed 's/{}/$item/g')"
+}
+
+case $op in
+    add) 
+        shift
+        echo "$*" >> "$queueFile"
+    ;;
+    peek) peek ;;
+    pop) pop ;;  
+    next) next ;;
+    run) while next; do true; done ;;
+esac
