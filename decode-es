@@ -97,6 +97,7 @@ def process_packet():
 #### INPUT PROCESSING ####
 
 if args.f and args.i: 
+    #TODO: use --pid flag instead (kills tail after specified pid dies)
     f = subprocess.Popen(['diewithparent', 'tail','-F', '-n', '+0', args.i],\
             stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     stdin = f.stdout
