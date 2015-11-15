@@ -1,0 +1,222 @@
+#!/bin/env python2
+
+import re
+import os
+import sys
+import subprocess
+
+
+class Link():
+    def __init__(self, target, name, orcsFile, line):
+        self.target = target
+        self.name = name
+        self.orcsFile = orcsFile
+        self.isDir = False
+        self.children = []
+        self.line = line
+
+def shellParam(s):
+    return "'" + s.replace("'", "''") + "'"
+
+# Workaround for Python's generally-horrible backslash-handling
+def wsEscape(s):
+    res = ''
+    for ch in s:
+        if ch.isspace():
+            # chr(92) = '\' - we can't even place a single backslash in a string constant
+            res += chr(92)
+        res += ch
+
+    return res
+
+# Find all files under a dir
+# Don't include dir itself in the result
+# Google recursive directory walking in python if you think this sucks
+def find(path):
+    path = chompSlash(path)
+    lines = [ line[len(path)+1:] for line in subprocess.check_output('find '+shellParam(path), shell=True).split('\n') if line]
+    return [ line for line in lines if line.strip()]
+        
+def chompSlash(path):
+    while path.endswith('/'):
+        path = path[:-1]
+
+    return path
+
+
+def canonical(path):
+    return chompSlash(os.path.abspath(os.path.expanduser(path)))
+
+# read the link at path and get an absolute path to the file it's pointing to
+def absReadLink(path):
+    target = os.readlink(path)
+
+    if not target.startswith('~') and not target.startswith('/'):
+        target = os.path.join(os.path.dirname(path), target)
+
+    return canonical(target)
+
+def isChildPath(container, contained):
+    container = canonical(container)
+    contained = canonical(contained)
+
+    #print "Checking containment:", container, contained
+
+    
+    if container == contained:
+        return True
+
+    return contained.startswith(container+'/')
+        
+def compile(path):
+    for idx, line in enumerate(open(canonical(path)).readlines()):
+        parts = re.split(r'(?<!\\)\s', line)
+        command = parts[0].strip()
+           
+        if command=='link':            
+            link = Link(parts[1], parts[2], path, idx)
+            
+            if os.path.isdir(canonical(link.target)):
+                link.isDir = True
+                link.children = []
+                dirs[link.name] = link
+                for f in find(canonical(link.target)):
+                    newLink = Link(os.path.join(link.target, f), os.path.join(link.name, f), path, idx)
+                    links[newLink.name] = newLink
+            else:
+                links[link.name] = link
+            
+        elif command=='unmanage':
+            for name in links.keys():
+                if isChildPath(parts[1], name):
+                    del links[name]
+            
+            for name in dirs.keys():
+                if isChildPath(parts[1], name):
+                    del dirs[name]
+        elif command=='include':
+            compile(command[1])
+
+def isManaged(name):
+    if not os.path.islink(name):
+        return False
+
+    for d in dirs.values():
+        if isChildPath(d.name, name):
+            return d
+
+    for link in links.values():
+        if isChildPath(link.name, name):
+            return link
+
+def doCopy(link):
+    print "  copying " + link.name + " to " + link.target
+    os.system("cp ", shellParam(link.name) + " " + shellParam(link.target))
+
+def doRemove(link):
+    print "  removing " + link.name
+    os.remove(link.name)
+
+def doLink(link):
+    print "  linking " + link.target + " to " + link.name
+    # or we can handle the exceptions from os.makedirs
+    os.system("mkdir -p "+ shellParam(os.path.dirname(link.name)))
+    os.symlink(os.path.relpath(canonical(link.target), os.path.dirname(canonical(link.name))), link.name)
+
+def process():
+    # construct directory images
+    for link in links.values():
+        for d in dirs.values():
+            if isChildPath(d.name, link.name):
+                d.children.append(link)
+
+    # actually link the files
+    for link in links.values():        
+        actions = []
+        if not os.path.lexists(canonical(link.target)):
+            print '** WARNING: nonexistent link target ' + link.target + ' while linking ' + link.name
+    
+        if os.path.lexists(link.name):
+            if not os.path.islink(link.name):
+                print "Link replaced by file:", link.target, link.name, link.isDir
+                actions = [doCopy, doRemove, doLink]
+            else:
+                if not canonical(link.target) == canonical(absReadLink(link.name)):
+                    print 'Updating link ' +  link.target + ' -> ' + link.name
+                    print canonical(link.target)
+                    print canonical(absReadLink(link.name))
+                    actions = [doRemove, doLink]
+                else:
+                    print "Already linked:", link.name
+        else:
+            actions = [doLink]
+
+        for action in actions:
+            action(link)
+
+    # check our work and clean away broken links
+    for d in dirs.values():
+        actual = {}
+        for path in find(d.name):
+            actual[canonical(os.path.join(d.name, path))] = True            
+
+        for link in d.children:
+            if canonical(link.name) in actual:
+                del actual[canonical(link.name)]
+            else:
+                print "WARNING: failed to create link", link.name
+
+        for name in actual.keys():
+            if os.path.lexists(name) and isManaged(name):
+                print 'Removing deleted link:', name
+                doRemove(Link(None, name, None))
+            else:
+                print "Found untracked file " + name + " in tracked directory " + d.name
+
+#### MAIN ####
+
+links = {} # global because the unmanage command may modify the entire links array
+dirs = {}
+
+launchDir = os.getcwd()
+sourceFile = 'orcsfile'
+homeDir = os.path.dirname(canonical(sourceFile))
+os.chdir(homeDir)
+
+print 'Launch dir:', canonical(launchDir)
+print 'Working dir:', homeDir
+
+compile(sourceFile)
+
+cmd = sys.argv[1]
+
+if cmd == 'track':
+    newFile = sys.argv[2]
+    dest = sys.argv[3] or '.orcs/home'
+
+    print 'Track ' + newFile + ' in ' + dest
+
+    link = isManaged(newFile)
+    if link:
+        print newFile + ' is already managed by ' + link.orcsFile + ':' + link.line
+        exit()
+
+    cwd = os.path.relpath(launchDir, homeDir)
+
+    # trim any leading ~ because we're about to join relative to the homedir
+    if newFile.startswith('~/'):
+        newFile = newFile[2:]
+
+    pathToLink = os.path.normpath(os.path.join(cwd, newFile))
+    pathToTarget = os.path.normpath(os.path.join(homeDir, dest, pathToLink))
+    
+    link = Link(pathToTarget, pathToLink, None, None) 
+
+    print 'Moving ' + wsEscape(pathToLink) + ' to ' + wsEscape(pathToTarget)
+    os.renames(pathToLink, pathToTarget)
+    doLink(link)
+
+    with(open(sourceFile, 'a')) as f: f.write('link ' + wsEscape(pathToTarget) + ' ' + wsEscape(pathToLink) + '\n')
+else:
+    print 'Performing sync...'
+    process()
