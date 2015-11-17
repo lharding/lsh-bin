@@ -67,8 +67,17 @@ def isChildPath(container, contained):
         return True
 
     return contained.startswith(container+'/')
-        
+
+def cdToRealFile(path):
+    realdir = os.path.dirname(os.path.realpath(canonical(path)))
+    os.chdir(realdir)
+    return realdir
+
 def compile(path):
+    realdir = cdToRealFile(path)
+
+    print 'Compiling '+path+' (actual dir '+realdir+')'
+    
     for idx, line in enumerate(open(canonical(path)).readlines()):
         parts = re.split(r'(?<!\\)\s', line)
         command = parts[0].strip()
@@ -111,17 +120,18 @@ def isManaged(name):
 
 def doCopy(link):
     print "  copying " + link.name + " to " + link.target
-    os.system("cp ", shellParam(link.name) + " " + shellParam(link.target))
+#    os.system("cp ", shellParam(link.name) + " " + shellParam(link.target))
 
 def doRemove(link):
     print "  removing " + link.name
-    os.remove(link.name)
+#    os.remove(link.name)
 
 def doLink(link):
     print "  linking " + link.target + " to " + link.name
     # or we can handle the exceptions from os.makedirs
-    os.system("mkdir -p "+ shellParam(os.path.dirname(link.name)))
-    os.symlink(os.path.relpath(canonical(link.target), os.path.dirname(canonical(link.name))), link.name)
+    dirPath = canonical(os.path.dirname(link.name))
+    if dirPath: os.system("mkdir -p "+ shellParam(dirPath))
+    os.symlink(os.path.relpath(canonical(link.target), dirPath), canonical(link.name))
 
 def process():
     # construct directory images
@@ -136,8 +146,8 @@ def process():
         if not os.path.lexists(canonical(link.target)):
             print '** WARNING: nonexistent link target ' + link.target + ' while linking ' + link.name
     
-        if os.path.lexists(link.name):
-            if not os.path.islink(link.name):
+        if os.path.lexists(canonical(link.name)):
+            if not os.path.islink(canonical(link.name)):
                 print "Link replaced by file:", link.target, link.name, link.isDir
                 actions = [doCopy, doRemove, doLink]
             else:
@@ -179,22 +189,26 @@ links = {} # global because the unmanage command may modify the entire links arr
 dirs = {}
 
 launchDir = os.getcwd()
-sourceFile = 'orcsfile'
+sourceFile = '~/.orcsfile'
 homeDir = os.path.dirname(canonical(sourceFile))
-os.chdir(homeDir)
-
-print 'Launch dir:', canonical(launchDir)
-print 'Working dir:', homeDir
 
 compile(sourceFile)
 
-cmd = sys.argv[1]
+os.chdir(homeDir)
+print 'Launch dir:', canonical(launchDir)
+print 'Working dir:', homeDir
+
+# sigh, python, sigh
+cmd = sys.argv[1] if len(sys.argv) > 1 else None
 
 if cmd == 'track':
-    newFile = sys.argv[2]
-    dest = sys.argv[3] or '.orcs/home'
+    cdToRealFile(sourceFile)
 
-    print 'Track ' + newFile + ' in ' + dest
+    newFile = sys.argv[2]
+    dest = ''
+    if len(sys.argv) > 3: dest = sys.argv[3]
+
+    print 'Track ' + newFile + ' in ' + (dest or '.')
 
     link = isManaged(newFile)
     if link:
@@ -203,20 +217,23 @@ if cmd == 'track':
 
     cwd = os.path.relpath(launchDir, homeDir)
 
-    # trim any leading ~ because we're about to join relative to the homedir
+    # is it already relative to $HOME?
     if newFile.startswith('~/'):
-        newFile = newFile[2:]
+        pathToLink = newFile[2:]
+    else:
+        pathToLink = os.path.normpath(os.path.join(cwd, newFile))
 
-    pathToLink = os.path.normpath(os.path.join(cwd, newFile))
-    pathToTarget = os.path.normpath(os.path.join(homeDir, dest, pathToLink))
+    # prepending './' in this manner makes absolute paths relative without changing relative ones
+    pathToTarget = os.path.normpath(os.path.join(dest, './'+pathToLink))
     
-    link = Link(pathToTarget, pathToLink, None, None) 
+    link = Link(pathToTarget, '~/'+pathToLink, None, None) 
 
-    print 'Moving ' + wsEscape(pathToLink) + ' to ' + wsEscape(pathToTarget)
-    os.renames(pathToLink, pathToTarget)
-    doLink(link)
+    print 'Moving ' + wsEscape(canonical(link.name)) + ' to ' + wsEscape(canonical(link.target))
+    os.renames(canonical(link.name), canonical(link.target))
 
-    with(open(sourceFile, 'a')) as f: f.write('link ' + wsEscape(pathToTarget) + ' ' + wsEscape(pathToLink) + '\n')
+    with(open(canonical(sourceFile), 'a')) as f: f.write('link ' + wsEscape(link.target) + ' ' + wsEscape(link.name) + '\n')
+
+    print 'Remember to run `orcs` to create links!'
 else:
     print 'Performing sync...'
     process()
