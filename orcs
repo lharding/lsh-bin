@@ -182,7 +182,13 @@ def process():
                 print 'Removing deleted link:', name
                 doRemove(Link(None, name, None, None))
             else:
-                print "Found untracked file " + name + " in tracked directory " + d.name
+                targ = os.path.relpath(name, canonical(d.name))
+                print "Found untracked file " + name + " in tracked directory " + d.name + ", tracking in " + d.target + " as " + targ
+                l = Link(os.path.join(canonical(d.target), targ), name, None, None)
+                print l.target, l.name
+                os.renames(l.name, l.target)
+                doLink(l)
+
 
 #### MAIN ####
 
