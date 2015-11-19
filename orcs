@@ -180,7 +180,7 @@ def process():
         for name in actual.keys():
             if os.path.lexists(name) and isManaged(name):
                 print 'Removing deleted link:', name
-                doRemove(Link(None, name, None))
+                doRemove(Link(None, name, None, None))
             else:
                 print "Found untracked file " + name + " in tracked directory " + d.name
 
