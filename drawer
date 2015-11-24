@@ -28,12 +28,13 @@ if [[ -e $TMPDIR$NAME ]]; then
         exit
     fi
 fi
-    
+
 # No window to show/hide, better create it. Do setup for that.
 # ============================================================
 
 # only first screen for now
-read SCR_WIDTH SCR_HEIGHT SCR_LEFT SCR_TOP < <(xrandr | grep -m 1 'primary' | scut 3 | tr 'x+' '  ')
+CFG=$(xrandr | grep -m 1 primary || xrandr | grep -m 1 connected)
+read SCR_WIDTH SCR_HEIGHT SCR_LEFT SCR_TOP < <(echo "$CFG" | grep -o '[0-9x+]\+' | head -n 1 | tr 'x+' '  ')
 
 SIDE=$2
 WIDTH=$3

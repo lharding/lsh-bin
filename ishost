@@ -1,0 +1,21 @@
+#!/bin/bash
+
+host=`hostname`
+not=false
+any=false
+
+if [[ "$1" == "not" ]]; then
+    not=true
+    shift
+fi
+
+for h in $@; do
+    if [[ "$h" == *"$host"* ]]; then
+        (! $not) && exit 0
+        any=true
+    fi
+done
+
+$not && (! $any) && exit 0
+
+exit 1
