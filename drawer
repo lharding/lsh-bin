@@ -15,16 +15,9 @@ if [[ -e $TMPDIR$NAME ]]; then
      read WINDOW < $TMPDIR$NAME
 
     # Window exists? Show/hide it and we're done.
-    if xwininfo -id $WINDOW &> /dev/null; then
-        #wmctrl -i -R $WINDOW
-        #wmctrl -i -R $WINDOW -b toggle,hidden
-        # Buggy wmctrl doesn't always focus the window when toggling, so do our own toggle logic:
-        if xwininfo -wm -id $WINDOW | grep -q '^ \+Hidden'; then
-            wmctrl -i -r $WINDOW -b remove,hidden
-            wmctrl -i -R $WINDOW
-        else
-            wmctrl -i -R $WINDOW -b add,hidden
-        fi
+    if wattr $WINDOW; then
+        chwso -r $WINDOW
+        mapw -t $WINDOW
         exit
     fi
 fi
@@ -84,15 +77,8 @@ esac
 
 COMMAND=$@
 
-WINDOW=`xtoolwait -wid $COMMAND`
+WINDOW=$(xtoolwait -wid -noprop $COMMAND)
 mkdir -p $TMPDIR
 echo $WINDOW > $TMPDIR$NAME
 
-#Poke WM into knowing the window will be floating
-sleep 0.5
-xdotool key super+ctrl+space
-
-wmctrl -i -r $WINDOW -b add,skip_taskbar
-wmctrl -i -r $WINDOW -b add,sticky,above
-wmctrl -i -r $WINDOW -e 0,$LEFT,$TOP,$WIDTH,$HEIGHT
-wmctrl -i -R $WINDOW
+wtp $LEFT $TOP $WIDTH $HEIGHT $WINDOW
