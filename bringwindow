@@ -1,8 +1,27 @@
 #!/bin/sh
-case $1 in "-a") PROMPT="goto:" ;; "-R") PROMPT="bring:" ;; esac
 
-WINDOW=`wmctrl -xl | scut ^-3,4-$ -j'\t' | expand -t 12,15,40 | vmenu --no-refocus -p $PROMPT | scut 0`
-[ -n $WINDOW ] && wmctrl -i $1 $WINDOW
+mapOp="-m"
 
-sleep 0.2 # give the wm time to change the focus
-xdotool key super+shift+Escape # poke the wm to change focus (awesome-wm likes to forget)
+for arg in $@; do
+    case "$arg" in
+        -a) prompt="goto:"; bring="false" ;;
+        -R) prompt="bring:"; bring="true" ;;
+        -t) mapOp="-t" ;;
+        *) selected="$arg" ;;
+    esac
+done
+
+[ -z "$selected" ] && selected=$(
+    for w in `lsw`; do
+        echo $w $(xprop -id $w WM_NAME | sed 's/[^=]\+=//')
+    done | vmenu --no-refocus -p $prompt | scut 0
+)
+
+if [ -n "$selected" ]; then
+    wtf $selected
+    chwso -r $selected
+    mapw $mapOp $selected
+    #TODO: workspaces handling
+fi
+
+
