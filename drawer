@@ -16,8 +16,7 @@ if [[ -e $TMPDIR$NAME ]]; then
 
     # Window exists? Show/hide it and we're done.
     if wattr $WINDOW; then
-        chwso -r $WINDOW
-        mapw -t $WINDOW
+        bringwindow -R -t $WINDOW
         exit
     fi
 fi
@@ -25,7 +24,7 @@ fi
 # No window to show/hide, better create it. Do setup for that.
 # ============================================================
 
-# only first screen for now
+# only first head for now
 CFG=$(xrandr | grep -m 1 primary || xrandr | grep -m 1 connected)
 read -r SCR_WIDTH SCR_HEIGHT SCR_LEFT SCR_TOP < <(echo "$CFG" | grep -o '\s[0-9x+]\+' | head -n 1 | tr 'x+' '  ')
 
