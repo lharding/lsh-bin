@@ -8,7 +8,7 @@ if test "$1" = "--nofork"; then
     shift
 fi
 
-if $allowx && test -n "$DISPLAY" && (xset -q 2>&1) > /dev/null; then
+if $allowx && canx; then
     $TERMINAL -e $edit_cmd $@
 else
     $edit_cmd $@
