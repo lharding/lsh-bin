@@ -34,7 +34,7 @@ fi
 
 # only first screen for now
 CFG=$(xrandr | grep -m 1 primary || xrandr | grep -m 1 connected)
-read SCR_WIDTH SCR_HEIGHT SCR_LEFT SCR_TOP < <(echo "$CFG" | grep -o '[0-9x+]\+' | head -n 1 | tr 'x+' '  ')
+read SCR_WIDTH SCR_HEIGHT SCR_LEFT SCR_TOP < <(echo "$CFG" | grep -o '\s[0-9x+]\+' | head -n 1 | tr 'x+' '  ')
 
 SIDE=$2
 WIDTH=$3
