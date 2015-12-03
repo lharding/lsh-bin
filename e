@@ -8,8 +8,14 @@ if test "$1" = "--nofork" || test -n "$SSH_CONNECTION"; then
     shift
 fi
 
+# rejoin whitespace in args
+args=$(
+    IFS='' 
+    for arg in $@; do printf '"%s" ' "$arg"; done)
+echo $args
+
 if $allowx && canx; then
-    $TERMINAL -e $edit_cmd $@ &
+    $TERMINAL -e sh -c "$edit_cmd $args" &
 else
-    $edit_cmd $@
+    eval "$edit_cmd $args"
 fi
