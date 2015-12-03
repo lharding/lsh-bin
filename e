@@ -1,9 +1,9 @@
 #!/bin/sh
 
 edit_cmd=nvim
-allowx='test -z "$SSH_CONNECTION"'
+allowx=true
 
-if test "$1" = "--nofork"; then
+if test "$1" = "--nofork" || test -n "$SSH_CONNECTION"; then
     allowx=false
     shift
 fi
