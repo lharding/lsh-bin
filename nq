@@ -2,8 +2,8 @@
 
 queueFile=`projfile nqfile`
 if [[ "-f" == "$1" ]]; then
-    echo "Using queuefile $queueFile" >&2
     queueFile="$2"
+    echo "Using queuefile $queueFile" >&2
     shift 2
 fi
 
@@ -16,7 +16,7 @@ cmd() {
 peek() {
     chomped=$(tail -n +2 "$queueFile")
     [[ -z "$chomped" ]] && exit 1
-    printf "%s" "$chomped" | head -n 1
+    printf "%s\n" "$chomped" | head -n 1
 }
 
 pop() {
