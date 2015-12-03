@@ -1,21 +1,13 @@
-#!/bin/sh
+#!/usr/bin/env rc
 
 edit_cmd=nvim
 allowx=true
 
-if test "$1" = "--nofork" || test -n "$SSH_CONNECTION"; then
-    allowx=false
-    shift
-fi
+~ $1 --nofork && { allowx=false; shift }
+test -n $"SSH_CONNECTION && allowx=false
 
-# rejoin whitespace in args
-args=$(
-    IFS='' 
-    for arg in $@; do printf '"%s" ' "$arg"; done)
-echo $args
-
-if $allowx && canx; then
-    $TERMINAL -e sh -c "$edit_cmd $args" &
-else
-    eval "$edit_cmd $args"
-fi
+if( $allowx && canx ) {
+    # have to split $TERMINAL into words!
+    `{echo $TERMINAL} -e $edit_cmd $* &
+}
+if not $edit_cmd $*
