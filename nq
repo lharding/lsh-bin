@@ -1,4 +1,4 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 
 queueFile=`projfile nqfile`
 if [[ "-f" == "$1" ]]; then
