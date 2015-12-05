@@ -84,7 +84,7 @@ esac
 
 COMMAND=$@
 
-WINDOW=`xtoolwait -wid $COMMAND`
+WINDOW=`xtoolwait -noprop -wid $COMMAND`
 mkdir -p $TMPDIR
 echo $WINDOW > $TMPDIR$NAME
 
