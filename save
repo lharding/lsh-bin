@@ -1,4 +1,4 @@
-#!/bin/ sh
+#!/bin/sh
 
 BRANCH=`git branch | scut 1`
 OLDBRANCH=$BRANCH
@@ -14,7 +14,7 @@ fi
 
 echo "Pushing $@ to $BRANCH"
 
-git add $@
+git add "$@"
 echo "Pushing ${@} at `date`" | git commit -F -
 git push -u origin $BRANCH
 git checkout $OLDBRANCH

@@ -7,11 +7,11 @@ SSH="ssh lsh.io"
 REMOTE_CMD="$SSH bash --login"
 
 fullpath() {
-    echo "$DEST_DIR$DIR_SUFFIX/$@"
+    echo "$DEST_DIR$DIR_SUFFIX/$*"
 }
 
 urlpath() {
-    echo "https://lsh.io:3000/share$DIR_SUFFIX/$@"
+    echo "https://lsh.io:3000/share$DIR_SUFFIX/$*"
 }
 
 if [[ "-local" == "$1" ]]; then
@@ -61,8 +61,8 @@ else
     if [[ "get" != "$1" ]] && [[ "-" != "$1" ]]; then
         IN_FILE="$1"
         shift
-        $REMOTE_CMD $0 -local $FROM -n `basename "$IN_FILE"` $@ < "$IN_FILE"
+        $REMOTE_CMD $0 -local $FROM -n `basename "$IN_FILE"` "$@" < "$IN_FILE"
     else
-        $REMOTE_CMD $0 -local $FROM $@
+        $REMOTE_CMD $0 -local $FROM "$@"
     fi
 fi

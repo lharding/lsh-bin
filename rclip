@@ -49,24 +49,24 @@ REMOTE_CMD_FOR_TAIL+=$CMD_ARGS
 case $OP in
     copy) 
         feedback "starting upload of $SELECTION"
-        (xclip -o -selection $SELECTION | $LOCAL_CMD put $@ &&\
+        (xclip -o -selection $SELECTION | $LOCAL_CMD put "$@" &&\
         feedback "uploaded $SELECTION") ||\
         feedback "failed to upload"
     ;;
     paste)
         feedback "starting download of $SELECTION"
-        ($LOCAL_CMD get $@ | xclip -i -selection $SELECTION &&\
+        ($LOCAL_CMD get "$@" | xclip -i -selection $SELECTION &&\
         feedback "downloaded clip to $SELECTION") ||\
         feedback "failed to download."
     ;;
-    put) $REMOTE_CMD local_put $@;;
-    get) $REMOTE_CMD local_get $@;;
+    put) $REMOTE_CMD local_put "$@";;
+    get) $REMOTE_CMD local_get "$@";;
     note) echo -e "$@" | $LOCAL_CMD put -a;;
-#    tail) $REMOTE_CMD_FOR_TAIL local_tail $@;;
+#    tail) $REMOTE_CMD_FOR_TAIL local_tail "$@";;
     io)
-        $LOCAL_CMD tail $@ &
+        $LOCAL_CMD tail "$@" &
         while read MSG; do
-            echo "$MSG" | $LOCAL_CMD put $@
+            echo "$MSG" | $LOCAL_CMD put "$@"
         done
         kill %1
     ;;
@@ -116,13 +116,13 @@ case $OP in
             *) break;;
         esac done
 
-        exec decode-es -i $LOG_FILE $FLOW $@ $HANDLE
+        exec decode-es -i $LOG_FILE $FLOW "$@" $HANDLE
     ;;
     tail)
         # Because ssh can't clean up after itself correctly in absence of a pty, we need a mechanism
         # to signal the remote tail -f command to terminate manually. So, we run the remote command
         # in a coprocess and send a single newline to the remote end when we exit.
-        coproc $REMOTE_CMD local_tail -flow $@
+        coproc $REMOTE_CMD local_tail -flow "$@"
         trap "{
             printf "\n" >&${COPROC[1]}
             kill $COPROC_PID &> /dev/null

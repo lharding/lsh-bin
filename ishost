@@ -9,7 +9,7 @@ if [[ "$1" == "not" ]]; then
     shift
 fi
 
-for h in $@; do
+for h in "$@"; do
     if [[ "$h" == *"$host"* ]]; then
         (! $not) && exit 0
         any=true

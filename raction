@@ -33,7 +33,7 @@ done
 if [[ $1 == '-' ]]; then
     DATA=`cat`
 else
-    DATA=$@
+    DATA="$@"
 fi
 
 printf "%s" "$DATA" | rclip -c actions $ACTION -e $EVENT -f $FROM $CUSTOM

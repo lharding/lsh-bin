@@ -1,13 +1,17 @@
-#!/usr/bin/env rc
+#!/usr/bin/sh
 
 edit_cmd=nvim
 allowx=true
 
-~ $1 --nofork && { allowx=false; shift }
-test -n $"SSH_CONNECTION && allowx=false
+if test "$1" = "--nofork"; then 
+    allowx=false
+    shift
+fi
 
-if( $allowx && canx ) {
-    # have to split $TERMINAL into words!
-    `{echo $TERMINAL} -e $edit_cmd $* &
-}
-if not $edit_cmd $*
+test -n "$SSH_CONNECTION" && allowx=false
+
+if $allowx && canx; then
+    $TERMINAL -e $edit_cmd "$@" &
+else
+    $edit_cmd "$@"
+fi

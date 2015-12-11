@@ -82,7 +82,7 @@ esac
 # Create the window
 # =================
 
-COMMAND=$@
+COMMAND="$@"
 
 WINDOW=`xtoolwait -noprop -wid $COMMAND`
 mkdir -p $TMPDIR
