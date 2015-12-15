@@ -46,7 +46,7 @@ case $OP in
                         date +%s.+N > "$POKED_FILE"
                     ;;
 
-                    chat)
+                    chat|alert)
                         if ! printf "%s" "$ES_FIELD_FROM" | grep -qi "$USER@$( hostname )"; then
                             feedback "Chat from $ES_FIELD_FROM" "$ES_FIELD_DATA"
                         fi
@@ -64,9 +64,12 @@ case $OP in
                         task sync
                         killall -USR1 tasknc #make any running tasknc's refresh
                     ;;
+
                     badtunnel)
                         killall badtunnel;
-                        (nohup badtunnel > "$HOME/.cache/badtunnel.log") &;;
+                        (nohup badtunnel > "$HOME/.cache/badtunnel.log") &
+                    ;;
+                    
                     ack) printf "    Got ack: %s %s\n" "$ES_FIELD_META" "$ES_FIELD_DATA";;
                     *) printf "    Unrecognized event '%s'.\n" "$ES_FIELD_EVENT" >&2 ;;
                 esac
