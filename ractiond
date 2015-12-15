@@ -3,6 +3,10 @@
 LAST_EVENT_FILE="$HOME/.raction_last_event"
 POKED_FILE="$HOME/.raction_poked"
 
+check_internet() {
+    ping -c 1 lsh.io
+}
+
 OP=$1
 shift
 
@@ -10,8 +14,8 @@ case $OP in
     handle)
         echo "$( logdate ): Processing $ES_FIELD_EVENT..."
 
-        if [[ -n $ES_FIELD_ID ]]; 
-            then printf "%s" "$ES_FIELD_ID" > "$LAST_EVENT_FILE;" 
+        if [[ -n $ES_FIELD_ID ]]; then
+            printf "%s" "$ES_FIELD_ID" > "$LAST_EVENT_FILE"
         else
             echo "Warning: got event with no ID." >&2
         fi
@@ -81,13 +85,15 @@ case $OP in
         echo "Done processing $ES_FIELD_EVENT"
     ;;
     start)
-        while true; do
+        while true; do            
             diewithparent "$0" run "$@"
             echo "$( logdate ): connection lost, reconnecting in 3s..." >&2
             sleep 3
         done
     ;;
     run)
+        check_internet && feedback "ractiond connecting..."
+
         AFTER=$(cat "$LAST_EVENT_FILE")
         [[ -z "$AFTER" ]] && AFTER=$( date +%s.%N )
         echo "AFTER=$AFTER"
@@ -99,6 +105,6 @@ case $OP in
         fi
 
         diewithparent rclip -c actions $ACTION -raw -after "$AFTER" -f | decode-es "$0" handle "$@"
-        ping -c 1 lsh.io && feedback "ractiond connection lost, reconnecting in 3s."
+        check_internet && feedback "ractiond connection lost"
     ;;
 esac
