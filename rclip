@@ -49,30 +49,30 @@ REMOTE_CMD_FOR_TAIL+=$CMD_ARGS
 case $OP in
     copy) 
         feedback "starting upload of $SELECTION"
-        (xclip -o -selection $SELECTION | $LOCAL_CMD put $@ &&\
+        (xclip -o -selection $SELECTION | $LOCAL_CMD put "$@" &&\
         feedback "uploaded $SELECTION") ||\
         feedback "failed to upload"
     ;;
     paste)
         feedback "starting download of $SELECTION"
-        ($LOCAL_CMD get $@ | xclip -i -selection $SELECTION &&\
+        ($LOCAL_CMD get "$@" | xclip -i -selection $SELECTION &&\
         feedback "downloaded clip to $SELECTION") ||\
         feedback "failed to download."
     ;;
-    put) $REMOTE_CMD local_put $@;;
-    get) $REMOTE_CMD local_get $@;;
+    put) $REMOTE_CMD local_put "$@";;
+    get) $REMOTE_CMD local_get "$@";;
     note) echo -e "$@" | $LOCAL_CMD put -a;;
-#    tail) $REMOTE_CMD_FOR_TAIL local_tail $@;;
+#    tail) $REMOTE_CMD_FOR_TAIL local_tail "$@";;
     io)
-        $LOCAL_CMD tail $@ &
+        $LOCAL_CMD tail "$@" &
         while read MSG; do
-            echo "$MSG" | $LOCAL_CMD put $@
+            echo "$MSG" | $LOCAL_CMD put "$@"
         done
         kill %1
     ;;
     local_put)
-	DATE=`logdate`
-        ID=`date '+%s.%N'`
+        DATE=$(logdate)
+        ID=$(date '+%s.%N')
         EVENT='clip'
 
         #TODO: non-brittle arg handling
@@ -95,20 +95,22 @@ case $OP in
             flock 200
             MUNGE='s/^\(.*\)$/data: \1/'
             if [[ $1 == '-a' ]]; then
-                tee -a $CLIP_FILE | sed "$MUNGE" >> $LOG_FILE
+                tee -a "$CLIP_FILE" | sed "$MUNGE" >> "$LOG_FILE"
             else
-                printf "\nevent: %s\nid: %s\ntime: %s\nmeta: %s\n%s" "$EVENT" "$ID" "$DATE" "$*" "$CUSTOM" >> $LOG_FILE
-                tee $CLIP_FILE | sed "$MUNGE" >> $LOG_FILE
-                printf "\n\n" >> $LOG_FILE
+                {
+                    printf "\nevent: %s\nid: %s\ntime: %s\nmeta: %s\n%s" "$EVENT" "$ID" "$DATE" "$*" "$CUSTOM"
+                    tee "$CLIP_FILE" | sed "$MUNGE"
+                    printf "\n\n" 
+                } >> "$LOG_FILE"
+
             fi
             
             echo "$ID"
         ) 200> "/tmp/rclip.${USER}.${CLIP_NAME}.lock"
     ;;    
-    local_get) cat $CLIP_FILE;;
+    local_get) cat "$CLIP_FILE";;
     local_tail)
         HANDLE='rclip handle_packet'
-        ARGS=''
         #TODO: better arg handling
         while true; do case $1 in
             '-flow') shift; FLOW='-flow';;
@@ -116,13 +118,13 @@ case $OP in
             *) break;;
         esac done
 
-        exec decode-es -i $LOG_FILE $FLOW $@ $HANDLE
+        exec decode-es -i "$LOG_FILE" $FLOW "$@" $HANDLE
     ;;
     tail)
         # Because ssh can't clean up after itself correctly in absence of a pty, we need a mechanism
         # to signal the remote tail -f command to terminate manually. So, we run the remote command
         # in a coprocess and send a single newline to the remote end when we exit.
-        coproc $REMOTE_CMD local_tail -flow $@
+        coproc $REMOTE_CMD local_tail -flow "$@"
         trap "{
             printf "\n" >&${COPROC[1]}
             kill $COPROC_PID &> /dev/null
@@ -130,7 +132,7 @@ case $OP in
         cat <&"${COPROC[0]}"
     ;;
     handle_packet)
-        printf "`tput -T xterm smso`    %s | %s | id=%s   `tput -T xterm rmso`\n%s\n\n" "$ES_FIELD_TIME" "$ES_FIELD_META" "$ES_FIELD_ID" "$ES_FIELD_DATA"
+        printf "$(tput -T xterm smso)    %s | %s | id=%s   $(tput -T xterm rmso)\n%s\n\n" "$ES_FIELD_TIME" "$ES_FIELD_META" "$ES_FIELD_ID" "$ES_FIELD_DATA"
     ;;
     *) echo "Unrecognized subcommand $OP"; exit 1
 esac

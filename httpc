@@ -1,0 +1,16 @@
+#!/bin/bash
+
+method="$1"
+shift
+
+url="$1"
+shift
+
+test "$1" != "--" && form="$1"
+shift
+
+test -n "$form" && form="-d '$form'"
+test ! -t 0 && form+=" -d @-"
+
+echo curl --insecure -X "$method" "$url" $formArg $form $upload "$@"
+curl --insecure -X "$method" "$url" $formArg $form $upload "$@"

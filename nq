@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-queueFile=`projfile nqfile`
+queueFile=$(projfile nqfile)
 if [[ "-f" == "$1" ]]; then
     queueFile="$2"
     echo "Using queuefile $queueFile" >&2
@@ -26,7 +26,8 @@ pop() {
 
 next() {
     action=$(cmd)
-    item=$(pop) || exit 1        
+    export item=$(pop) || exit 1 # item is used by the command obtained
+    # note that the sed expression is intentionally unexpanded - eval does that
     eval "$(printf "%s" "$action" | sed 's/{}/$item/g')"
 }
 

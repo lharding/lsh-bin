@@ -12,18 +12,18 @@ TMPDIR="$XDG_RUNTIME_DIR/drawers.wids/"
 NAME=$1
 
 if [[ -e $TMPDIR$NAME ]]; then
-     read WINDOW < $TMPDIR$NAME
+     read -r WINDOW < "$TMPDIR$NAME"
 
     # Window exists? Show/hide it and we're done.
-    if xwininfo -id $WINDOW &> /dev/null; then
+    if xprop -id "$WINDOW" &> /dev/null; then
         #wmctrl -i -R $WINDOW
         #wmctrl -i -R $WINDOW -b toggle,hidden
         # Buggy wmctrl doesn't always focus the window when toggling, so do our own toggle logic:
-        if xwininfo -wm -id $WINDOW | grep -q '^ \+Hidden'; then
-            wmctrl -i -r $WINDOW -b remove,hidden
-            wmctrl -i -R $WINDOW
+        if xprop -id "$WINDOW" | grep -q '_NET_WM_STATE_HIDDEN'; then
+            wmctrl -i -r "$WINDOW" -b remove,hidden
+            wmctrl -i -R "$WINDOW"
         else
-            wmctrl -i -R $WINDOW -b add,hidden
+            wmctrl -i -R "$WINDOW" -b add,hidden
         fi
         exit
     fi
@@ -34,7 +34,7 @@ fi
 
 # only first screen for now
 CFG=$(xrandr | grep -m 1 primary || xrandr | grep -m 1 connected)
-read SCR_WIDTH SCR_HEIGHT SCR_LEFT SCR_TOP < <(echo "$CFG" | grep -o '\s[0-9x+]\+' | head -n 1 | tr 'x+' '  ')
+read -r SCR_WIDTH SCR_HEIGHT SCR_LEFT SCR_TOP < <(echo "$CFG" | grep -o '\s[0-9x+]\+' | head -n 1 | tr 'x+' '  ')
 
 SIDE=$2
 WIDTH=$3
@@ -47,52 +47,51 @@ shift 4
 
 if [[ $WIDTH == *% ]]; then
     WIDTH=${WIDTH:0:-1} # chomp '%'
-    WIDTH=$[($WIDTH*10*$SCR_WIDTH)/1000]
+    WIDTH=$(( (WIDTH*10*SCR_WIDTH)/1000 ))
 fi
 
 if [[ $HEIGHT == *% ]]; then
     HEIGHT=${HEIGHT:0:-1} # chomp '%'
-    HEIGHT=$[($HEIGHT*10*$SCR_HEIGHT)/1000]
+    HEIGHT=$(( (HEIGHT*10*SCR_HEIGHT)/1000 ))
 fi
 
 # Figure out where to put the window
 # ==================================
 
-TOP_ADJ=$[($SCR_HEIGHT-$HEIGHT)/2]
-LEFT_ADJ=$[($SCR_WIDTH-$WIDTH)/2]
+TOP_ADJ=$(( (SCR_HEIGHT-HEIGHT)/2 ))
+LEFT_ADJ=$(( (SCR_WIDTH-WIDTH)/2 ))
 
 case $SIDE in
     "left")
         LEFT=$SCR_LEFT
-        TOP=$[$SCR_TOP + $TOP_ADJ]
+        TOP=$(( SCR_TOP + TOP_ADJ ))
     ;;
     "right")
-        LEFT=$[$SCR_WIDTH - $WIDTH]
-        TOP=$[$SCR_TOP + $TOP_ADJ]
+        LEFT=$(( SCR_WIDTH - WIDTH ))
+        TOP=$(( SCR_TOP + TOP_ADJ ))
     ;;
     "bottom")
-        LEFT=$[$SCR_LEFT + $LEFT_ADJ]
-        TOP=$[$SCR_HEIGHT - $HEIGHT]
+        LEFT=$(( SCR_LEFT + LEFT_ADJ ))
+        TOP=$(( SCR_HEIGHT - HEIGHT ))
     ;;
     "top")
-        LEFT=$[$SCR_LEFT + $LEFT_ADJ]
+        LEFT=$(( SCR_LEFT + LEFT_ADJ ))
         TOP=$SCR_TOP
 esac
 
 # Create the window
 # =================
 
-COMMAND=$@
 
-WINDOW=`xtoolwait -noprop -wid $COMMAND`
-mkdir -p $TMPDIR
-echo $WINDOW > $TMPDIR$NAME
+WINDOW=$(xtoolwait -noprop -wid $@)
+mkdir -p "$TMPDIR"
+echo "$WINDOW" > "$TMPDIR$NAME"
 
 #Poke WM into knowing the window will be floating
 sleep 0.5
 xdotool key super+ctrl+space
 
-wmctrl -i -r $WINDOW -b add,skip_taskbar
-wmctrl -i -r $WINDOW -b add,sticky,above
-wmctrl -i -r $WINDOW -e 0,$LEFT,$TOP,$WIDTH,$HEIGHT
-wmctrl -i -R $WINDOW
+wmctrl -i -r "$WINDOW" -b add,skip_taskbar
+wmctrl -i -r "$WINDOW" -b add,sticky,above
+wmctrl -i -r "$WINDOW" -e "0,$LEFT,$TOP,$WIDTH,$HEIGHT"
+wmctrl -i -R "$WINDOW"

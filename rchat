@@ -26,12 +26,12 @@ case $1 in
     ;;
     '--nowrap')
         export AFTER_FILE="/tmp/rchat_after_$$"
-        echo "$((`date +%s`-60*60*24))" > $AFTER_FILE
+        echo "$(($(date +%s)-60*60*24))" > $AFTER_FILE
         SELF=$$
         (
             while true; do
-                rclip -c actions tail -raw -after `cat $AFTER_FILE` -f | decode-es $0 --handle
-                printf "${EHL}Connection lost. Reconnecting...$UNHL\n"
+                rclip -c actions tail -raw -after "$(cat $AFTER_FILE)" -f | decode-es "$0" --handle
+                printf "%sConnection lost. Reconnecting...%s\n" "$EHL" "$UNHL"
             done
             kill "$SELF"
         ) &
@@ -48,4 +48,4 @@ case $1 in
     ;;
 esac
 
-srw $0 --nowrap
+srw "$0" --nowrap
