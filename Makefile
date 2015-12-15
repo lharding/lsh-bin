@@ -1,3 +1,5 @@
+all: diewithparent canx
+
 diewithparent:
 	cc -o diewithparent diewithparent.c
 
