@@ -1,6 +1,6 @@
 #!/bin/bash
 
-host=`hostname`
+host=$(hostname)
 not=false
 any=false
 

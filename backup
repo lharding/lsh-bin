@@ -1,5 +1,5 @@
 #!/bin/bash
-HOST=`hostname`
+HOST=$(hostname)
 DSTHOST="lsh.io"
 EXCLUDE="/tmp/rsyncexcludes"
 case $1 in 
@@ -41,5 +41,5 @@ esac
 
 [[ -n "$2" ]] && DSTHOST="$2"
 
-CMDLINE="$COMMAND -avP $SRCFILES `whoami`@192.168.1.254:$DSTDIR --delete --exclude-from=$EXCLUDE --link-dest=$LINKDST"
+CMDLINE="$COMMAND -avP $SRCFILES $(whoami)@$DSTHOST:$DSTDIR --delete --exclude-from=$EXCLUDE --link-dest=$LINKDST"
 $CMDLINE

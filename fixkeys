@@ -2,13 +2,11 @@
 xmodmap -e 'clear Lock' -e 'keycode 0x42 = Escape'
 
 if [ "apple" = "$1" ]; then
-    DEVICES=`dmesg | grep Apple | grep Keyboard | grep input`
-    IFS=$'\n' 
-    for DEVICE in $DEVICES; do
-        DEV=`echo $DEVICE | sed -e 's/.*hidraw\([[:digit:]]\+\).*/\/dev\/hidraw\1/'`
-        if echo $DEV | grep '^/dev' > /dev/null ; then
+    dmesg | grep Apple | grep Keyboard | grep input | while read -r DEVICE; do
+        DEV=$(echo "$DEVICE" | sed -e 's/.*hidraw\([[:digit:]]\+\).*/\/dev\/hidraw\1/')
+        if echo "$DEV" | grep '^/dev' > /dev/null ; then
             echo "Fixing $DEVICE as [$DEV]"
-            sudo fix-apple-kb $DEV
+            sudo fix-apple-kb "$DEV"
         fi
     done
 else

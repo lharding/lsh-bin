@@ -5,10 +5,10 @@ if [ "$1" = '--no-refocus' ]; then
 fi
 
 if ! canx; then
-    slmenu "$@" -b -i -l $((`tput lines`-1))
+    slmenu "$@" -b -i -l $(($(tput lines)-1))
 else
-    [ -z $NOFOCUS ] && WINDOW=`xprop -root _NET_ACTIVE_WINDOW | scut 4`
+    [ -z $NOFOCUS ] && WINDOW=$(xprop -root _NET_ACTIVE_WINDOW | scut 4)
     dmenu "$@" -l 50 -i -t
     # re-focus the window that was focused before we ran
-    [ -z $NOFOCUS ] && wmctrl -i -a $WINDOW &> /dev/null
+    [ -z $NOFOCUS ] && wmctrl -i -a "$WINDOW" > /dev/null 2>&1
 fi

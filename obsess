@@ -5,5 +5,5 @@ shift
 while true; do
   clear
   "$@"
-  sleep $SLEEP
+  sleep "$SLEEP"
 done

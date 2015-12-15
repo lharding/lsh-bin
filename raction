@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ '-local' == $1 ]]; then
+if [[ '-local' == "$1" ]]; then
     ACTION='local_put'
     shift
 else
@@ -10,7 +10,7 @@ fi
 EVENT=$1
 shift
 
-FROM="from:$USER@`hostname`"
+FROM="from:$USER@$(hostname)"
 CUSTOM=''
 while [[ -n $1 ]]; do
     case $1 in
@@ -31,9 +31,7 @@ while [[ -n $1 ]]; do
 done
 
 if [[ $1 == '-' ]]; then
-    DATA=`cat`
+    cat
 else
-    DATA="$@"
-fi
-
-printf "%s" "$DATA" | rclip -c actions $ACTION -e $EVENT -f $FROM $CUSTOM
+    printf "%s" "$*"
+fi | rclip -c actions $ACTION -e "$EVENT" -f "$FROM" $CUSTOM
