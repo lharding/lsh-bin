@@ -9,6 +9,7 @@ if [[ "$1" == "not" ]]; then
     shift
 fi
 
+# TODO: is overoptimistic for hostnames that are prefixes of each other
 for h in "$@"; do
     if [[ "$h" == *"$host"* ]]; then
         (! $not) && exit 0
