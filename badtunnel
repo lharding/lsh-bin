@@ -1,2 +1,2 @@
 #!/bin/sh
-while true; do ssh -N -R '*:9998:localhost:22' lsh.io; echo "*** Connection lost at `date`."; sleep 3; done
+while true; do ssh -N -R '*:9998:localhost:22' lsh.io; echo "*** Connection lost at $( date )."; sleep 3; done

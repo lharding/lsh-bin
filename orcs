@@ -208,8 +208,8 @@ homeDir = os.path.dirname(canonical(sourceFile))
 
 compile(sourceFile)
 
-for link in links.values():
-    print link.name + '->' + link.target
+#for link in links.values():
+#    print link.name + '->' + link.target
 
 os.chdir(homeDir)
 print 'Launch dir:', canonical(launchDir)

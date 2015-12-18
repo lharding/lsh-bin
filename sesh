@@ -8,17 +8,17 @@ munge() {
 
 case $1 in
     load)
-        IFS=$'\n'
-        for WIN in `cat $CACHE`; do
-            TITLE=`echo $WIN | scut 1-$ | munge`
-            DESK=`echo $WIN | scut 0`
+        shift
+        while read -r WIN; do
+            TITLE=$(echo "$WIN" | scut 1-$ | munge)
+            DESK=$(echo "$WIN" | scut 0)
             echo "Moving to $DESK: $TITLE"
-            [ "$1" = '-n' ] || wmctrl -r "$TITLE" -t $DESK
-        done
+            [ "$1" = '-n' ] || wmctrl -r "$TITLE" -t "$DESK"
+        done < "$CACHE"
         echo "State loaded."
     ;;
     *)
-        wmctrl -l | scut 1,3-$ > $CACHE
+        wmctrl -l | scut 1,3-$ > "$CACHE"
         echo "State saved."
     ;;
 esac

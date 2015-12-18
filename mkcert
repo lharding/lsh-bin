@@ -1,0 +1,3 @@
+#!/bin/sh
+echo "Usage: mkcert KEYFILE.key CERTFILE.crt DAYS"
+openssl req -nodes -x509 -newkey rsa:2048 -keyout "$1" -out "$2" -days "$3"

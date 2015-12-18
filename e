@@ -1,15 +1,17 @@
-#!/bin/sh
+#!/usr/bin/sh
 
 edit_cmd=nvim
 allowx=true
 
-if test "$1" = "--nofork"; then
+if test "$1" = "--nofork"; then 
     allowx=false
     shift
 fi
 
-if $allowx && test -n "$DISPLAY" && (xset -q 2>&1) > /dev/null; then
-    $TERMINAL -e $edit_cmd $@
+test -n "$SSH_CONNECTION" && allowx=false
+
+if $allowx && canx; then
+    $TERMINAL -e $edit_cmd "$@" &
 else
-    $edit_cmd $@
+    $edit_cmd "$@"
 fi

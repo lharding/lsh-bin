@@ -1,14 +1,14 @@
-#!/bin/sh
+#!/bin/bash
 
 TIME=0
 while [ -n "$1" ]; do
     ARG="$1"
-    COUNT=$(echo $ARG | grep -o '[0-9]\+')
+    COUNT=$(echo "$ARG" | grep -o '[0-9]\+')
     
     case "$ARG" in
-        *s) TIME=$(($TIME+$COUNT));;
-        *m) TIME=$(($TIME+60*$COUNT));;
-        *h) TIME=$(($TIME+60*60*$COUNT));;
+        *s) TIME=$((TIME+COUNT));;
+        *m) TIME=$((TIME+60*COUNT));;
+        *h) TIME=$((TIME+60*60*COUNT));;
         *d) echo "I recommend a cronjob."; exit 1;;
         *) break;
     esac
@@ -21,19 +21,19 @@ if [ 0 -eq "$TIME" ]; then
     exit 1
 fi
 
-FINISH_TIME=$(date --date=@$(($(date +%s)+$TIME)))
+FINISH_TIME=$(date --date=@$(($(date +%s)+TIME)))
 
 MESSAGE="Timer $$ done."
-DONE_CMD='feedback -u critical "$MESSAGE"'
+DONE_CMD=( feedback -u critical "$MESSAGE" )
 case "$1" in
-    -r) shift; DONE_CMD="raction poke $@";;
-    -c) shift; DONE_CMD=$@;;
+    -r) shift; DONE_CMD=( raction poke "$@" );;
+    -c) shift; DONE_CMD=( "$@" );;
     '') ;; # so we don't make MESSAGE empty with no args
-    *) MESSAGE="$@";;
+    *) MESSAGE="$*";;
 esac
 
 ( (
     echo "Timer set for $TIME seconds from now ($FINISH_TIME). PID=$$";
-    sleep $TIME && eval "$DONE_CMD";
+    sleep $TIME && "${DONE_CMD[@]}";
     echo "Timer $$ done." >&2
 )& )&

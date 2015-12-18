@@ -24,4 +24,3 @@ if [ -n "$selected" ]; then
     #TODO: workspaces handling
 fi
 
-

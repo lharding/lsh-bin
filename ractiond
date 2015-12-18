@@ -3,34 +3,38 @@
 LAST_EVENT_FILE="$HOME/.raction_last_event"
 POKED_FILE="$HOME/.raction_poked"
 
+check_internet() {
+    ping -c 1 lsh.io
+}
+
 OP=$1
 shift
 
 case $OP in
     handle)
-        echo "`logdate`: Processing $ES_FIELD_EVENT..."
+        echo "$( logdate ): Processing $ES_FIELD_EVENT..."
 
-        if [[ -n $ES_FIELD_ID ]]; 
-            then printf "%s" "$ES_FIELD_ID" > $LAST_EVENT_FILE; 
+        if [[ -n $ES_FIELD_ID ]]; then
+            printf "%s" "$ES_FIELD_ID" > "$LAST_EVENT_FILE"
         else
             echo "Warning: got event with no ID." >&2
         fi
 
-        if [[ -z "$ES_FIELD_HOST" ]] || printf "%s" "$ES_FIELD_HOST" | grep -qi "`hostname`"; then
+        if [[ -z "$ES_FIELD_HOST" ]] || ishost "$ES_FIELD_HOST"; then
             echo "    we are the target host"
         
-            if which ractiond-local &> /dev/null && ractiond-local $@; then exit; else
+            if which ractiond-local &> /dev/null && ractiond-local "$@"; then exit; else
                 echo "    Not cancelled by raction-local."
                 case $ES_FIELD_EVENT in
                     poke)
-                       feedback --test && (
+                       canx && (
                            USE_LEDS=true
-                           # don't blink if a horrible busted PS/2->USB adapter is present
+                           # dont blink if a horrible busted PS/2->USB adapter is present
                            if lsusb | grep -qi PCPlay; then USE_LEDS=false; fi
         
                             rm "$POKED_FILE" &> /dev/null
                             NID='none'
-                            while ! [ -f $POKED_FILE ]; do
+                            while ! [[ -f $POKED_FILE ]]; do
                                 # constantly recreate notification, for maximum annoyance
                                 NID=$(feedback -r $NID -u critical "<b>** INCOMING POKE **</b><br><br>$ES_FIELD_DATA")
                                 $USE_LEDS && xset led 3
@@ -38,22 +42,22 @@ case $OP in
                                 $USE_LEDS && xset -led 3
                                 sleep 0.25
                             done
-                            feedback -r $NID -t 100 "going away now." > /dev/null
+                            feedback -r "$NID" -t 100 "going away now." > /dev/null
                         ) &
                     ;;
 
                     poked)
-                        date +%s.+N > $POKED_FILE
+                        date +%s.+N > "$POKED_FILE"
                     ;;
 
-                    chat)
-                        if ! printf "%s" "$ES_FIELD_FROM" | grep -qi "$USER@`hostname`"; then
+                    chat|alert)
+                        if ! printf "%s" "$ES_FIELD_FROM" | grep -qi "$USER@$( hostname )"; then
                             feedback "Chat from $ES_FIELD_FROM" "$ES_FIELD_DATA"
                         fi
                     ;;
 
                     note)
-                        printf "%s: %s\n" "$ES_FIELD_TIME" "$ES_FIELD_DATA" >> $HOME/writing/notes.txt
+                        printf "%s: %s\n" "$ES_FIELD_TIME" "$ES_FIELD_DATA" >> "$HOME/writing/notes.txt"
                         feedback -t 0 "$ES_FIELD_DATA" > /dev/null
                     ;;
 
@@ -64,9 +68,12 @@ case $OP in
                         task sync
                         killall -USR1 tasknc #make any running tasknc's refresh
                     ;;
+
                     badtunnel)
                         killall badtunnel;
-                        (nohup badtunnel > $HOME/.cache/badtunnel.log) &;;
+                        (nohup badtunnel > "$HOME/.cache/badtunnel.log") &
+                    ;;
+                    
                     ack) printf "    Got ack: %s %s\n" "$ES_FIELD_META" "$ES_FIELD_DATA";;
                     *) printf "    Unrecognized event '%s'.\n" "$ES_FIELD_EVENT" >&2 ;;
                 esac
@@ -78,24 +85,26 @@ case $OP in
         echo "Done processing $ES_FIELD_EVENT"
     ;;
     start)
-        while true; do
-            diewithparent $0 run $@
-            echo "`logdate`: connection lost, reconnecting in 3s..." >&2
+        while true; do            
+            diewithparent "$0" run "$@"
+            echo "$( logdate ): connection lost, reconnecting in 3s..." >&2
             sleep 3
         done
     ;;
     run)
-        read AFTER < $LAST_EVENT_FILE
-        [[ -z "$AFTER" ]] && AFTER=`date +%s.%N`
+        check_internet && feedback "ractiond connecting..."
+
+        AFTER=$(cat "$LAST_EVENT_FILE")
+        [[ -z "$AFTER" ]] && AFTER=$( date +%s.%N )
         echo "AFTER=$AFTER"
 
-        if [[ '-local' == $1 ]]; then
+        if [[ '-local' == "$1" ]]; then
             ACTION='local_tail'
         else
             ACTION='tail'
         fi
 
-        diewithparent rclip -c actions $ACTION -raw -after $AFTER -f | decode-es $0 handle $@
-        ping -c 1 lsh.io && feedback "ractiond connection lost, reconnecting in 3s."
+        diewithparent rclip -c actions $ACTION -raw -after "$AFTER" -f | decode-es "$0" handle "$@"
+        check_internet && feedback "ractiond connection lost"
     ;;
 esac

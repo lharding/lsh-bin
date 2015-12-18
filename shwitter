@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+
+url_encode() {
+    if test -n "$1"; then
+        printf "%s" "$1" | url_encode
+    else
+        curl -Gso /dev/null -w %{url_effective} --data-urlencode @- "" | cut -c 3-
+    fi
+}
+
+conf=$(projfile shwitter.conf)
+if test "$1" = "-c"; then
+   conf="$2"
+   shift 2
+fi
+
+source "$conf"
+
+api_call() {
+    local once=$RANDOM
+    local ts=$(date +%s)
+    local hmac="$secret&$token_secret"
+
+    local hasFile="$1"
+    local method="$2"
+    local url="$3"
+
+    shift 3    
+    local form="$*"
+    local formOpt=
+
+    local encoded=
+    local base_str="${method}&$(url_encode "$url")&oauth_consumer_key%3D${key}%26oauth_nonce%3D${once}%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D${ts}%26oauth_token%3D${token}%26oauth_version%3D1.0"
+
+    if test -n "$form" && ! $hasFile; then
+        base_str+="%26$(url_encode "$form")"
+        formOpt="-d"
+    fi
+
+    if $hasFile; then
+        formOpt="-F"
+        test -n "$form" && form+='&'
+        form+="media=@-" 
+    fi
+
+    local signature=$(printf "%s" "$base_str" | openssl dgst -sha1 -hmac $hmac -binary | openssl base64 | url_encode)
+
+
+    local oauth_header="Authorization: OAuth oauth_consumer_key=\"$key\", oauth_nonce=\"$once\", oauth_signature=\"$signature\", oauth_signature_method=\"HMAC-SHA1\", oauth_timestamp=\"$ts\", oauth_token=\"$token\", oauth_version=\"1.0\""
+
+    local minus_g=
+    test "$method" = "GET" && minus_g="-G"
+
+    local errfile=/tmp/shwitter.err
+    curl -vvD $errfile $minus_g -X $method "$url" --header "$oauth_header" $formOpt "$form" $mediaField || cat $errfile >&2
+}
+
+op="$1"
+shift
+case "$op" in
+    tweet)
+        api_call false POST 'https://api.twitter.com/1.1/statuses/update.json' "status=$(url_encode "$*")"
+    ;;
+    timeline)
+        api_call false GET 'https://api.twitter.com/1.1/statuses/home_timeline.json'
+    ;;
+    post_media)
+        api_call true POST 'https://upload.twitter.com/1.1/media/upload.json'
+    ;;
+    tweet_media)        
+        while test -n "$1" && test "$1" != "--"; do
+            media_ids+="&media_ids=$($0 post_media < "$1" | jq '.media_id_string' | sed 's/"//g')"
+            shift
+        done
+
+        shift # consume --
+
+        echo "Media uploaded, ids=$media_ids. Tweeting '$*'"
+
+        api_call false POST 'https://api.twitter.com/1.1/statuses/update.json' "status=$(url_encode "$*")$media_ids"
+    ;;
+    encode)
+        url_encode "$*"
+    ;;
+    *)
+        api_call false $op $@
+    ;;
+esac

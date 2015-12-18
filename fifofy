@@ -1,6 +1,6 @@
 #!/bin/sh
 
-TMPFILE="/tmp/fifofy-`(head /dev/urandom; date) | md5sum | scut 0`"
+TMPFILE="/tmp/fifofy-$( (head /dev/urandom; date) | md5sum | scut 0)"
 MODE=$1
 
 shift
@@ -19,27 +19,27 @@ esac
     
 if $IN; then
     INFIFO="$TMPFILE-in"
-    mkfifo $INFIFO || exit 1
-    echo $INFIFO
+    mkfifo "$INFIFO" || exit 1
+    echo "$INFIFO"
 fi
 
 if $OUT; then
     OUTFIFO="$TMPFILE-out"
-    mkfifo $OUTFIFO || exit 2
-    echo $OUTFIFO
+    mkfifo "$OUTFIFO" || exit 2
+    echo "$OUTFIFO"
 fi
 
 case $MODE in
     in)
-        $@ < $INFIFO
+        "$@" < "$INFIFO"
     ;;
     out)
-        $@ > $OUTFIFO
+        "$@" > "$OUTFIFO"
     ;;
     *)
-        $@ < $INFIFO > $OUTFIFO
+        "$@" < "$INFIFO" > "$OUTFIFO"
     ;;
 esac
 
-[ -e $INFIFO ] && rm $INFIFO
-[ -e $OUTFIFO ] && rm $OUTFIFO
+[ -e "$INFIFO" ] && rm "$INFIFO"
+[ -e "$OUTFIFO" ] && rm "$OUTFIFO"
