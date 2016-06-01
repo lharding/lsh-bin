@@ -9,6 +9,12 @@ shift
 test "$1" != "--" && form="$1"
 shift
 
+echo "form: ${form:0:1}"
+ 
+if test "${form:0:1}" = "{"; then
+    formArg='-H "Content-Type: application/json; charset=utf-8"'
+fi
+
 test -n "$form" && form="-d '$form'"
 test ! -t 0 && form+=" -d @-"
 
