@@ -1,4 +1,5 @@
 #!/bin/sh
+cat ~/writing/notes.txt
 while true; do
     mknote
 done

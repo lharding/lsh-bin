@@ -1,4 +1,4 @@
 #!/bin/bash
-NOTE="$(logdate): "
-read -e -i "$NOTE" NOTE
-echo "it was $NOTE" >> ~/writing/notes.txt
+read -e -p "> "
+printf '\e[A\e[K'
+printf "%s: %s\n" "$(logdate)" "$REPLY" | tee -a ~/writing/notes.txt
