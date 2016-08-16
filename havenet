@@ -1,0 +1,2 @@
+#!/bin/sh
+ping -c 1 lsh.io >> /dev/null 2>&1
