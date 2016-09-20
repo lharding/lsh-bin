@@ -62,8 +62,8 @@ case $OP in
                     ;;
 
                     task-sync) 
-                        ADDS=$(printf "%s" "$ES_FIELD_DATA" | jq '.added[] | "\(.project) \(.description)"')
-                        MODS=$(printf "%s" "$ES_FIELD_DATA" | jq '.modified[] | "\(.status) \(.project) \(.description)"')
+                        ADDS=$(printf "%s" "$ES_FIELD_DATA" | jq -r '.added[] | "\(.project) \(.description)"')
+                        MODS=$(printf "%s" "$ES_FIELD_DATA" | jq -r '.modified[] | "\(.status) \(.project) \(.description)"')
                         feedback -a "Tasklist" "Remote update, running sync..." "<b>Added:</b>\n$ADDS\n\n<b>Modified:</b>\n$MODS"
                         task sync
                         killall -USR1 tasknc #make any running tasknc's refresh
@@ -92,7 +92,7 @@ case $OP in
         done
     ;;
     run)
-        check_internet && feedback "ractiond connecting..."
+        canx && check_internet && feedback "ractiond connecting..."
 
         AFTER=$(cat "$LAST_EVENT_FILE")
         [[ -z "$AFTER" ]] && AFTER=$( date +%s.%N )
@@ -105,6 +105,6 @@ case $OP in
         fi
 
         diewithparent rclip -c actions $ACTION -raw -after "$AFTER" -f | decode-es "$0" handle "$@"
-        check_internet && feedback "ractiond connection lost"
+        canx && check_internet && feedback "ractiond connection lost"
     ;;
 esac
