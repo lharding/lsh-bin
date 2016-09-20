@@ -12,7 +12,7 @@ if len(sys.argv) > 1 and sys.argv[1] == '--test':
     # Exception handling baroquery because it's not possible to redirect to dev null in python
     # Why am I torturing myself with this joke language again?
     try:
-        subprocess.check_output(['xset', '-q'], stderr=subprocess.STDOUT)
+        subprocess.check_output(['canx'], stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as pythonSucks:
         exit(pythonSucks.returncode)
     exit()
