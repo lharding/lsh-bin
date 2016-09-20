@@ -1,0 +1,131 @@
+#!/bin/bash
+TOKEN=$(<~/.config/pebble-token)
+NOTIFY=true
+REMIND=true
+
+fixdate() {
+    date -d "$1" -Iseconds
+}
+
+# parse args
+while [[ -n $1 ]]; do
+    ARG=$1
+    shift
+    case $ARG in
+        -title)
+            TITLE="$1"
+            shift
+            ;;
+        -subtitle)
+            SUBTITLE="$1"
+            shift
+            ;;
+        -time|-d|-when|-at)
+            WHEN=$(fixdate "$1")
+            shift
+            ;;
+        -id)
+            ID="$1"
+            shift
+            ;;
+        -icon)
+            ICON="$1"
+            shift
+            ;;
+        -type)
+            TYPE="$1"
+            shift
+            ;;
+        -nonotify)
+            NOTIFY=false
+            ;;
+        -noremind)
+            REMIND=false
+            ;;
+        -duration)
+            DURATION="$1"
+            ;;
+        -)
+            JSON=$(cat | sed s/__pin_id__/$ID/g)
+            ;;
+        *)
+            set -- "$ARG" "$@"
+            break
+            ;;
+    esac
+done
+
+[[ -z "$ID" ]] && ID="pebble-pin-sh-$(randstr 16)"
+[[ -z "$ICON" ]] && ICON=NOTIFICATION_FLAG
+[[ -z "$TYPE" ]] && TYPE=genericPin
+[[ -z "$WHEN" ]] && WHEN=$(fixdate "$1") && shift
+[[ -z "$TITLE" ]] && TITLE="$@"
+
+if [[ -z "$JSON" ]]; then
+    if [[ -n "$SUBTITLE" ]]; then 
+        SUBTITLE='"subtitle": "'"$SUBTITLE"'",'
+        BODY='"body": "'"$SUBTITLE"'",'
+    fi
+
+    [[ -n "$DURATION" ]] && DURATION='"duration": "'"$DURATION"'",'
+
+    $NOTIFY && NOTIFY_JSON=$(cat <<__json
+      ,
+      "createNotification": {
+        "layout": {
+            "type": "genericNotification",
+            "title": "Create: $TITLE",
+            $BODY
+            "tinyIcon": "system://images/$ICON"
+        }
+      },
+      "updateNotification": {
+        "time": "$WHEN",
+        "layout": {
+            "type": "genericNotification",
+            "title": "Update: $TITLE",
+            $BODY
+            "tinyIcon": "system://images/$ICON"
+        }
+      }
+__json
+)
+    
+    $REMIND && REMINDER_JSON=$(cat <<__json
+      ,
+      "reminders": [{
+        "time": "$WHEN",
+        "layout": {
+            "type": "genericReminder",
+            "title": "$TITLE",
+            $BODY
+            "tinyIcon": "system://images/$ICON"
+        }
+      }]
+__json
+)
+
+    JSON=$(cat <<__json
+    {
+      "id": "$ID",
+      "time": "$WHEN",
+      "layout": {
+        "type": "$TYPE",
+        "title": "$TITLE",
+        $SUBTITLE
+        $DURATION
+        "tinyIcon": "system://images/$ICON"
+      }
+      $NOTIFY_JSON
+      $REMINDER_JSON
+  }
+__json
+)
+fi
+
+echo "$JSON"
+
+curl -X PUT "https://timeline-api.getpebble.com/v1/user/pins/$ID" \
+    --header "Content-Type: application/json" \
+    --header "X-User-Token: $TOKEN" \
+    -d "$JSON" >&2 && echo $ID
