@@ -3,6 +3,3 @@ case $1 in "-a") PROMPT="goto:" ;; "-R") PROMPT="bring:" ;; esac
 
 WINDOW=$(wmctrl -xl | scut ^-3,4-$ -j'\t' | expand -t 12,15,40 | vmenu --no-refocus -p $PROMPT | scut 0)
 [ -n "$WINDOW" ] && wmctrl -i "$1" "$WINDOW"
-
-sleep 0.2 # give the wm time to change the focus
-xdotool key super+shift+Escape # poke the wm to change focus (awesome-wm likes to forget)
