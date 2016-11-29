@@ -1,0 +1,2 @@
+#!/bin/sh
+printf "Got ack from %s: %s %s\n" "$ES_FIELD_FROM" "$ES_FIELD_META" "$ES_FIELD_DATA"

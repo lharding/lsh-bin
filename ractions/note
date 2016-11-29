@@ -1,0 +1,3 @@
+#!/bin/bash
+printf "%s: %s\n" "$ES_FIELD_TIME" "$ES_FIELD_DATA" >> "$HOME/writing/notes.txt"
+                        feedback -t 0 "$ES_FIELD_DATA" > /dev/null

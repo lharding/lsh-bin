@@ -1,0 +1,3 @@
+#!/bin/bash
+                        killall badtunnel;
+                        (nohup badtunnel > "$HOME/.cache/badtunnel.log") &

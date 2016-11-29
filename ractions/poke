@@ -1,0 +1,27 @@
+#!/bin/bash
+POKED_FILE="$HOME/.raction_poked"
+
+case $(basename "$0") in
+    poke)
+        canx && (
+           USE_LEDS=true
+           # dont blink if a horrible busted PS/2->USB adapter is present
+           if lsusb | grep -qi PCPlay; then USE_LEDS=false; fi
+
+            rm "$POKED_FILE" &> /dev/null
+            NID='none'
+            while ! [[ -f $POKED_FILE ]]; do
+                # constantly recreate notification, for maximum annoyance
+                NID=$(feedback -r $NID -u critical "<b>** INCOMING POKE **</b><br><br>$ES_FIELD_DATA")
+                $USE_LEDS && xset led 3
+                sleep 0.5
+                $USE_LEDS && xset -led 3
+                sleep 0.25
+            done
+            feedback -r "$NID" -t 100 "going away now." > /dev/null
+        ) &
+        ;;
+    poked)
+        date +%s.+N > "$POKED_FILE" 
+        ;;
+esac

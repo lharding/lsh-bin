@@ -1,11 +1,7 @@
 #!/bin/bash
 
 LAST_EVENT_FILE="$HOME/.raction_last_event"
-POKED_FILE="$HOME/.raction_poked"
-
-check_internet() {
-    ping -c 1 lsh.io
-}
+RACTIONS="$(dirname $(readlink -f "${BASH_SOURCE[0]}"))/ractions"
 
 OP=$1
 shift
@@ -24,59 +20,9 @@ case $OP in
             echo "    we are the target host"
         
             if which ractiond-local &> /dev/null && ractiond-local "$@"; then exit; else
-                echo "    Not cancelled by raction-local."
-                case $ES_FIELD_EVENT in
-                    poke)
-                       canx && (
-                           USE_LEDS=true
-                           # dont blink if a horrible busted PS/2->USB adapter is present
-                           if lsusb | grep -qi PCPlay; then USE_LEDS=false; fi
-        
-                            rm "$POKED_FILE" &> /dev/null
-                            NID='none'
-                            while ! [[ -f $POKED_FILE ]]; do
-                                # constantly recreate notification, for maximum annoyance
-                                NID=$(feedback -r $NID -u critical "<b>** INCOMING POKE **</b><br><br>$ES_FIELD_DATA")
-                                $USE_LEDS && xset led 3
-                                sleep 0.5
-                                $USE_LEDS && xset -led 3
-                                sleep 0.25
-                            done
-                            feedback -r "$NID" -t 100 "going away now." > /dev/null
-                        ) &
-                    ;;
-
-                    poked)
-                        date +%s.+N > "$POKED_FILE"
-                    ;;
-
-                    chat|alert)
-                        if ! printf "%s" "$ES_FIELD_FROM" | grep -qi "$USER@$( hostname )"; then
-                            feedback "Chat from $ES_FIELD_FROM" "$ES_FIELD_DATA"
-                        fi
-                    ;;
-
-                    note)
-                        printf "%s: %s\n" "$ES_FIELD_TIME" "$ES_FIELD_DATA" >> "$HOME/writing/notes.txt"
-                        feedback -t 0 "$ES_FIELD_DATA" > /dev/null
-                    ;;
-
-                    task-sync) 
-                        ADDS=$(printf "%s" "$ES_FIELD_DATA" | jq -r '.added[] | "\(.project) \(.description)"')
-                        MODS=$(printf "%s" "$ES_FIELD_DATA" | jq -r '.modified[] | "\(.status) \(.project) \(.description)"')
-                        feedback -a "Tasklist" "Remote update, running sync..." "<b>Added:</b>\n$ADDS\n\n<b>Modified:</b>\n$MODS"
-                        task sync
-                        killall -USR1 tasknc #make any running tasknc's refresh
-                    ;;
-
-                    badtunnel)
-                        killall badtunnel;
-                        (nohup badtunnel > "$HOME/.cache/badtunnel.log") &
-                    ;;
-                    
-                    ack) printf "    Got ack: %s %s\n" "$ES_FIELD_META" "$ES_FIELD_DATA";;
-                    *) printf "    Unrecognized event '%s'.\n" "$ES_FIELD_EVENT" >&2 ;;
-                esac
+                echo "    ...not cancelled by raction-local."
+                echo "    Executing $RACTIONS/$ES_FIELD_EVENT"
+                "$RACTIONS/$ES_FIELD_EVENT"
             fi
             if [[ $ES_FIELD_EVENT != 'ack' ]]; then
                 raction ack "$ES_FIELD_ID"
@@ -92,7 +38,7 @@ case $OP in
         done
     ;;
     run)
-        canx && check_internet && feedback "ractiond connecting..."
+        canx && havenet && feedback "ractiond connecting..."
 
         AFTER=$(cat "$LAST_EVENT_FILE")
         [[ -z "$AFTER" ]] && AFTER=$( date +%s.%N )
@@ -105,6 +51,6 @@ case $OP in
         fi
 
         diewithparent rclip -c actions $ACTION -raw -after "$AFTER" -f | decode-es "$0" handle "$@"
-        canx && check_internet && feedback "ractiond connection lost"
+        canx && havenet && feedback "ractiond connection lost"
     ;;
 esac
