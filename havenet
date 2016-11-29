@@ -1,2 +1,9 @@
 #!/bin/sh
-ping -c 1 lsh.io >> /dev/null 2>&1
+
+PING='ping -c 1 lsh.io' 
+
+if test "-v" = "$1"; then
+    $PING
+else
+    $PING > /dev/null 2>&1
+fi    
