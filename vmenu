@@ -1,14 +1,23 @@
 #!/bin/sh
-if [ "$1" = '--no-refocus' ]; then
-    NOFOCUS=1
+set -x
+while [ -n "$1" ]; do
+    ARG="$1"
     shift
-fi
+    case "$ARG" in
+        --no-refocus) NOFOCUS=1;;
+        -it)
+            INITIAL_ARG=-it;
+            INITIAL="$*";
+            shift $#;
+        break;;
+    esac
+done
 
 if ! canx; then
     slmenu "$@" -b -i -l $(($(tput lines)-1))
 else
     [ -z $NOFOCUS ] && WINDOW=$(xprop -root _NET_ACTIVE_WINDOW | scut 4)
-    dmenu "$@" -l 50 -i -t
+    dmenu "$@" -l 50 -i -t $INITIAL_ARG "${INITIAL[@]}"
     # re-focus the window that was focused before we ran
     [ -z $NOFOCUS ] && wmctrl -i -a "$WINDOW" > /dev/null 2>&1
 fi
