@@ -1,5 +1,0 @@
-#!/bin/sh
-GROPTS=$GREP_OPTIONS
-unset GREP_OPTIONS
-/bin/grep $GROPTS "$@"
-
