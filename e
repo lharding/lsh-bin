@@ -1,4 +1,4 @@
-#!/usr/bin/sh
+#!/bin/sh
 
 edit_cmd=nvim
 allowx=true
