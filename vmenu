@@ -1,5 +1,8 @@
 #!/bin/sh
-test "$1" = "--no-refocus" && NOFOCUS=1
+if test "$1" = "--no-refocus"; then
+    NOFOCUS=1
+    shift
+fi
 
 if ! canx; then
     slmenu "$@" -b -i -l $(($(tput lines)-1))
