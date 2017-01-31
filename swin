@@ -1,0 +1,58 @@
+#!/bin/bash
+
+handleCmd() {
+    case "$1" in
+        next) killall swin -USR1;;
+        prev) killall swin -USR2;;
+        *) killall swin;;
+    esac
+}
+
+pid=$$
+if pgrep swin | grep -qv $pid; then
+    # we're already running, just command.
+    handleCmd "$@"
+    exit
+fi
+
+desk="$(wmctrl -d | grep \* | scut 0)"
+windows="$(wmctrl -l | grep "^\S\+\s\+$desk" | scut 0,3-)"
+winCount=$(($(printf '%s' "$windows" | wc -l)+1)) # TODO: why does this come up one short?
+notificationId=1337
+focusIdx=$(printf '%s' "$windows" | grep -m 1 -n $(pfw) | grep -o '^[0-9]*') # TODO: do or don't use wmutils
+
+getFocus() {
+    printf '%s' "$windows" | sed "$focusIdx p;d" | scut 0
+}
+
+mvFocus() {
+    echo mvFocus $1
+
+    focusIdx=$((focusIdx+$1))
+    ((focusIdx<1)) && focusIdx=$((winCount))
+    ((focusIdx>winCount)) && focusIdx=1
+
+    wmctrl -i -a $(getFocus)
+    notify
+}
+
+notify() {
+    focus=$(getFocus)
+    notificationId=$(feedback -t 0 -r $notificationId "$(printf '%s' "$windows" | sed "s/$focus \(.*\)$/<b>-->\1<\/b>/" | sed 's/^0x[0-9a-fA-F]\+ //')")
+}
+
+notify
+
+trap "mvFocus 1" USR1
+trap "mvFocus -1" USR2
+
+sleep infinity & sleepId=$!
+trap "echo trapped; kill $sleepId" INT TERM
+
+handleCmd "$@"
+
+while kill -0 $sleepId > /dev/null 2>&1; do
+    wait $sleepId
+done
+
+feedback -t 1 -r $notificationId bye
