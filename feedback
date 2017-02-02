@@ -1,4 +1,18 @@
 #!/bin/sh
-[[ "--test" = "$1" ]] && exec canx
+if test "$1" = "-x"; then
+    # kill notification
+    dbus-send --print-reply --type=method_call --dest='org.freedesktop.Notifications' \
+        /org/freedesktop/Notifications org.freedesktop.Notifications.CloseNotification \
+        "uint32:$2"
+    exit
+fi
 
-exec notify-desktop "$@"
+if test "$1" = "-sr"; then
+    REPFILE="$XDG_RUNTIME_DIR/${2}_notification_id"
+    REPID="$(cat "$REPFILE" 2> /dev/null)"
+    [ -z "$REPID" ] && REPID='none'
+    shift 2
+    exec notify-desktop -r "$REPID" "$@" | tee "$REPFILE"
+else
+    exec notify-desktop "$@"
+fi
