@@ -11,8 +11,6 @@ notificationId=1337
 focusIdx=$(($(printf '%s\n' "${wids[@]}" | grep -m 1 -n $(xdotool getactivewindow) | cut -d':' -f1)-1))
 
 mvFocus() {
-    echo mvFocus $1
-
     focusIdx=$((focusIdx+$1))
     ((focusIdx<0)) && focusIdx=$((winCount-1))
     ((focusIdx>=winCount)) && focusIdx=0
