@@ -28,7 +28,7 @@ mvFocus() {
 
 notify() {
     focus=$(getFocus)
-    feedback -r $notificationId -t 0 "$(printf '%s' "$windows" | sed "s/$focus \(.*\)$/<b>--> \1<\/b>/" | sed 's/^0x[0-9a-fA-F]\+ /    /')"
+    feedback -r $notificationId -t 0 "Windows:" "$(printf '%s' "$windows" | sed "s/$focus \(.*\)$/<b>🡆 \1<\/b>/" | sed 's/^0x[0-9a-fA-F]\+ /  /')"
 }
 
 notify
