@@ -19,7 +19,7 @@ mvFocus() {
 }
 
 notify() {
-    feedback -r $notificationId -t 0 "Space $desk windows:" "$(printf '%s' "$windows" | sed "$((focusIdx+1)) s/^  \(.*\)$/<b>⮀\1<\/b>/")"
+    feedback -r $notificationId -t 0 "Space $desk windows:" "$(printf '%s' "$windows" | sed "$((focusIdx+1)) s/^  \(.*\)$/⮀<b><u>\1<\/u><\/b>/")"
 }
 
 #handle first arg from hotkey daemon
