@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -x
-
 #only one at a time (simplifies hotkey daemon handling)
 test "$(pgrep -c swin)" = "1" || exit
 
