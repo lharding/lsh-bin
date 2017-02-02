@@ -1,19 +1,9 @@
 #!/bin/bash
 
-handleCmd() {
-    case "$1" in
-        next) killall swin -USR1;;
-        prev) killall swin -USR2;;
-        *) killall swin;;
-    esac
-}
+set -x
 
-pid=$$
-if pgrep swin | grep -qv $pid; then
-    # we're already running, just command.
-    handleCmd "$@"
-    exit
-fi
+#only one at a time (simplifies hotkey daemon handling)
+test "$(pgrep -c swin)" = "1" || exit
 
 desk="$(wmctrl -d | grep \* | scut 0)"
 windows="$(wmctrl -l | grep "^\S\+\s\+$desk" | scut 0,3-)"
@@ -38,21 +28,19 @@ mvFocus() {
 
 notify() {
     focus=$(getFocus)
-    notificationId=$(feedback -t 0 -r $notificationId "$(printf '%s' "$windows" | sed "s/$focus \(.*\)$/<b>-->\1<\/b>/" | sed 's/^0x[0-9a-fA-F]\+ //')")
+    feedback -r $notificationId -t 0 "$(printf '%s' "$windows" | sed "s/$focus \(.*\)$/<b>--> \1<\/b>/" | sed 's/^0x[0-9a-fA-F]\+ /    /')"
 }
 
 notify
 
-trap "mvFocus 1" USR1
-trap "mvFocus -1" USR2
-
-sleep infinity & sleepId=$!
-trap "echo trapped; kill $sleepId" INT TERM
-
-handleCmd "$@"
-
-while kill -0 $sleepId > /dev/null 2>&1; do
-    wait $sleepId
+xsk | while read evt; do
+    case "$evt" in
+        "j 1") mvFocus 1;;
+        "k 1") mvFocus -1;;
+        Super_*\ 0)
+            feedback -x $notificationId
+            exit
+        ;;
+    esac
 done
 
-feedback -t 1 -r $notificationId bye
