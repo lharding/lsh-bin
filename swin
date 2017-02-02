@@ -5,42 +5,44 @@ set -x
 #only one at a time (simplifies hotkey daemon handling)
 test "$(pgrep -c swin)" = "1" || exit
 
-desk="$(wmctrl -d | grep \* | scut 0)"
-windows="$(wmctrl -l | grep "^\S\+\s\+$desk" | scut 0,3-)"
-winCount=$(($(printf '%s' "$windows" | wc -l)+1)) # TODO: why does this come up one short?
+desk="$(xdotool get_desktop)"
+wids=($(xdotool search --onlyvisible --desktop $desk '.*' | sort -h))
+windows="$(wname ${wids[@]} | sed 's/^/  /')"
+winCount=${#wids[@]}
 notificationId=1337
-focusIdx=$(printf '%s' "$windows" | grep -m 1 -n $(pfw) | grep -o '^[0-9]*') # TODO: do or don't use wmutils
-
-getFocus() {
-    printf '%s' "$windows" | sed "$focusIdx p;d" | scut 0
-}
+focusIdx=$(($(printf '%s\n' "${wids[@]}" | grep -m 1 -n $(xdotool getactivewindow) | cut -d':' -f1)-1))
 
 mvFocus() {
     echo mvFocus $1
 
     focusIdx=$((focusIdx+$1))
-    ((focusIdx<1)) && focusIdx=$((winCount))
-    ((focusIdx>winCount)) && focusIdx=1
+    ((focusIdx<0)) && focusIdx=$((winCount-1))
+    ((focusIdx>=winCount)) && focusIdx=0
 
-    wmctrl -i -a $(getFocus)
-    notify
+    xdotool windowactivate ${wids[$focusIdx]}
 }
 
 notify() {
-    focus=$(getFocus)
-    feedback -r $notificationId -t 0 "Windows:" "$(printf '%s' "$windows" | sed "s/$focus \(.*\)$/<b>🡆 \1<\/b>/" | sed 's/^0x[0-9a-fA-F]\+ /  /')"
+    feedback -r $notificationId -t 0 "Space $desk windows:" "$(printf '%s' "$windows" | sed "$((focusIdx+1)) s/^  \(.*\)$/<b>⮀\1<\/b>/")"
 }
 
-notify
+#handle first arg from hotkey daemon
+case "$1" in
+    next) mvFocus 1;;
+    prev) mvFocus -1;;
+esac
 
-xsk | while read evt; do
-    case "$evt" in
-        "j 1") mvFocus 1;;
-        "k 1") mvFocus -1;;
-        Super_*\ 0)
-            feedback -x $notificationId
-            exit
-        ;;
-    esac
-done
-
+#do we have any of our modkeys still held?
+if xsk Super_L Super_R; then
+    notify
+    xsk | while read evt; do
+        case "$evt" in
+            "j 1") mvFocus 1; notify;;
+            "k 1") mvFocus -1; notify;;
+            Super_*\ 0) 
+               feedback -x $notificationId
+               exit
+            ;;
+        esac
+    done
+fi

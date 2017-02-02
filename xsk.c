@@ -10,21 +10,28 @@
 #include <X11/Xutil.h>
 
 int cont = 1;             // flag for while loop
+int result = 0;
+
+int check = 0;
+const char *const *checkChord;
 
 Display *display = 0;         // X server connection
 
-const char* key_map[256];       // key names
-const char* key_map_upper[256]; // key names, upper case
+const char* key_map[32768];       // key names
 
 void quitter(int sig) {
     cont = 0;
 }
 
 int main(int argc, const char *const *argv) {
-  if(signal(SIGINT, &quitter) == SIG_ERR ||
-     signal(SIGTERM, &quitter) == SIG_ERR) {
-      fprintf(stderr, "Could not register signal handlers.");
-      exit(1);
+  if(signal(SIGINT, &quitter) == SIG_ERR || signal(SIGTERM, &quitter) == SIG_ERR) {
+     fprintf(stderr, "Could not register signal handlers.");
+     exit(1);
+  }
+
+  if(argc > 1) {
+    check = 1;
+    checkChord = argv;
   }
 
   /*
@@ -50,36 +57,50 @@ int main(int argc, const char *const *argv) {
   /*
    * fill relevant key buffers
    */
-  char keys[32];                  // buffer for reading keys in
-  char lastkeys[32];              // previous keys state  
+  #define KEYS_LEN 32
+  char keys[KEYS_LEN];                  // buffer for reading keys in
+  char lastkeys[KEYS_LEN];              // previous keys state  
 
-  memset(lastkeys, 0, 32);
+  memset(lastkeys, 0, KEYS_LEN);
 		
   while (cont) {
+    int check_success = 0;
+
     usleep(10000);
     
     XQueryKeymap(display, keys);
 
     // print changed keys
-    for (unsigned int i = 0; i < sizeof(keys); ++i) {
-      if (keys[i] != lastkeys[i]) {
-        // check which key got changed
-        for (unsigned int j = 0, test = 1; j < 8; ++j, test *= 2)
-          // if the changed  print this
-          if ((keys[i] & test) != (lastkeys[i] & test)) {
-            int code = i*8+j;
-            const char*  key = key_map[code];
+    for (unsigned int i = 0; i < KEYS_LEN; ++i) {
+      // check which key got changed
+      for (unsigned int j = 0, test = 1; j < 8; ++j, test <<= 1) {
+        int code = i*8+j;
 
-            if (strlen(key)) { 
-              printf("%s %d\n", key, keys[i] & test ? 1 : 0);
-              fflush(stdout);
-            }
+        if(code < min_key_code || code > max_key_code) continue;
+
+        const char*  key = key_map[code];
+        int key_down = keys[i] & test ? 1 : 0;
+
+        if(check) {
+          for(int i=1; i<argc; i++) {
+            if(key_down && !strcmp(key, argv[i])) check_success = 1;
           }
-      
-        lastkeys[i] = keys[i];
+        }
+        else if ((keys[i] & test) != (lastkeys[i] & test)) {
+          printf("%s %d\n", key, key_down);
+          fflush(stdout);
+        }
       }
+      
+      lastkeys[i] = keys[i];
+    }
+
+    if(check) {
+        result = !check_success;
+        cont = 0;
     }
   }
 
   XCloseDisplay(display);
+  exit(result);
 }
