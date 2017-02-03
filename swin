@@ -3,7 +3,7 @@
 #only one at a time (simplifies hotkey daemon handling)
 test "$(pgrep -c swin)" = "1" || exit
 
-if desk=$(xdotool get_desktop); then
+if desk=$(xdotool get_desktop 2> /dev/null); then
     ewmh=true
     deskArg="--desktop $desk"
     deskMsg="Space $desk windows:"
@@ -11,11 +11,11 @@ else
     deskMsg="Windows:"
 fi
 
-wids=($(xdotool search --onlyvisible $deskArg '.+' | sort -h))
+wids=($(xdotool search --onlyvisible $deskArg '.+' 2> /dev/null | sort -h))
 windows="$(wname ${wids[@]} | sed 's/^/  /')"
 winCount=${#wids[@]}
 notificationId=1337
-focusIdx=$(($(printf '%s\n' "${wids[@]}" | grep -m 1 -n $(xdotool getwindowfocus) | cut -d':' -f1)-1))
+focusIdx=$(($(printf '%s\n' "${wids[@]}" | grep -m 1 -n $(xdotool getwindowfocus 2> /dev/null) | cut -d':' -f1)-1))
 
 mvFocus() {
     focusIdx=$((focusIdx+$1))
@@ -32,7 +32,7 @@ mvFocus() {
 }
 
 notify() {
-    feedback -r $notificationId -t 0 "$deskMsg" "$(printf '%s' "$windows" | sed "$((focusIdx+1)) s/^  \(.*\)$/⮀<b><u>\1<\/u><\/b>/")"
+    feedback -r $notificationId -t 0 "$deskMsg" "$(printf '%s' "$windows" | sed "$((focusIdx+1)) s/^  \(.*\)$/⮀<b><u>\1<\/u><\/b>/")" > /dev/null
 }
 
 #handle first arg from hotkey daemon
@@ -50,7 +50,7 @@ if xsk Super_L Super_R; then
             "j 1") mvFocus 1; notify;;
             "k 1") mvFocus -1; notify;;
             Super_*\ 0) 
-               feedback -x $notificationId
+               feedback -x $notificationId > /dev/null
                exit
             ;;
         esac
