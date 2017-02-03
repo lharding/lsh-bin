@@ -7,7 +7,6 @@ screenSize() {
 maximize() {
     local win=$1
     read x y w h < <(screenSize)
-    echo "Got window: $x $y $w $h $win"
     wmv -a $x $y $win
     wrs -a $w $h $win
 }
@@ -15,10 +14,13 @@ maximize() {
 for w in $(lsw); do maximize $w; done
 
 wew | while read line; do
-    event="$(printf '%s' "$line" | sed 's/:.*$//')"
-    window="$(printf '%s' "$line" | sed 's/^[^:]*://')"
+    event="$(printf '%s' "$line" | cut -d: -f1)"
+    window="$(printf '%s' "$line" | cut -d: -f2)"
 
     case "$event" in
+        17|18) # window went away
+            wtf $(lsw | tail -n 1)
+        ;;
         19) # map window
             wattr o $window || maximize $window
             wtf $window
