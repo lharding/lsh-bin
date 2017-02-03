@@ -3,29 +3,43 @@
 #only one at a time (simplifies hotkey daemon handling)
 test "$(pgrep -c swin)" = "1" || exit
 
-desk="$(xdotool get_desktop)"
-wids=($(xdotool search --onlyvisible --desktop $desk '.*' | sort -h))
+if desk=$(xdotool get_desktop); then
+    ewmh=true
+    deskArg="--desktop $desk"
+    deskMsg="Space $desk windows:"
+else
+    deskMsg="Windows:"
+fi
+
+wids=($(xdotool search --onlyvisible $deskArg '.+' | sort -h))
 windows="$(wname ${wids[@]} | sed 's/^/  /')"
 winCount=${#wids[@]}
 notificationId=1337
-focusIdx=$(($(printf '%s\n' "${wids[@]}" | grep -m 1 -n $(xdotool getactivewindow) | cut -d':' -f1)-1))
+focusIdx=$(($(printf '%s\n' "${wids[@]}" | grep -m 1 -n $(xdotool getwindowfocus) | cut -d':' -f1)-1))
 
 mvFocus() {
     focusIdx=$((focusIdx+$1))
     ((focusIdx<0)) && focusIdx=$((winCount-1))
     ((focusIdx>=winCount)) && focusIdx=0
 
-    xdotool windowactivate ${wids[$focusIdx]}
+    focus=${wids[$focusIdx]}
+
+    if test -n "$ewmh"; then
+        xdotool windowactivate $focus
+    else
+        xdotool windowraise $focus windowfocus $focus
+    fi
 }
 
 notify() {
-    feedback -r $notificationId -t 0 "Space $desk windows:" "$(printf '%s' "$windows" | sed "$((focusIdx+1)) s/^  \(.*\)$/⮀<b><u>\1<\/u><\/b>/")"
+    feedback -r $notificationId -t 0 "$deskMsg" "$(printf '%s' "$windows" | sed "$((focusIdx+1)) s/^  \(.*\)$/⮀<b><u>\1<\/u><\/b>/")"
 }
 
 #handle first arg from hotkey daemon
 case "$1" in
     next) mvFocus 1;;
     prev) mvFocus -1;;
+    what) notify;;
 esac
 
 #do we have any of our modkeys still held?
