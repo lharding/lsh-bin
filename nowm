@@ -1,0 +1,27 @@
+#!/bin/bash
+
+screenSize() {
+    wattr xywh `lsw -r`
+}
+
+maximize() {
+    local win=$1
+    read x y w h < <(screenSize)
+    echo "Got window: $x $y $w $h $win"
+    wmv -a $x $y $win
+    wrs -a $w $h $win
+}
+
+for w in $(lsw); do maximize $w; done
+
+wew | while read line; do
+    event="$(printf '%s' "$line" | sed 's/:.*$//')"
+    window="$(printf '%s' "$line" | sed 's/^[^:]*://')"
+
+    case "$event" in
+        19) # map window
+            wattr o $window || maximize $window
+            wtf $window
+        ;;
+    esac
+done
