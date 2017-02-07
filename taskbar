@@ -60,10 +60,11 @@ while true; do
         echo
         date +'%a %Y/%m/%d %H:%M.%S (epoch+%s)'
         powerState
-        soundState
-        playerState
         netState
-        echo "--------------------------------------------------------------------------------"
+        echo
+        playerState
+        soundState
+        echo 
         test -z "$skipped" || cpuState
     )"
     sleep 0.2
