@@ -1,0 +1,86 @@
+#!/bin/sh
+xsk Super_L Super_R && noTimeout="-t 0"
+
+windowState() {
+    local win=$(pfw)
+    local state="$(xprop -id $win)"
+
+    printf '['
+
+    (printf "$state" | grep -qi 'floating[^=]*= 1') && printf 'F '
+    (printf "$state" | grep -qi maximized) && printf '+ '
+    (printf "$state" | grep -qi sticky) && printf 'S '
+    
+    printf '%s] %s' "$(xdotool get_desktop)" "$(wname `pfw`)"
+}
+
+powerState() {
+    cd /sys/class/power_supply
+    ls | while read supply; do
+        printf "$sep"
+        case "$(< "$supply/type")" in
+            Mains)
+                if test "$(< "$supply/online")" = "1"; then
+                    printf "${supply}: online"
+                fi
+                ;;
+            Battery)
+                if test "$(< "$supply/present")" = "1"; then
+                    printf '%s: %s%% (%s)' "$supply" "$(< "$supply/capacity")" "$(< "$supply/status")"
+                fi
+                ;;
+        esac
+        sep=' / '
+    done
+    printf '\n'
+}
+
+soundState() {
+    amixer get Master | tail -1 | sed 's/^[^:]\+:/Master/'
+}
+
+playerState() {
+     xdotool search YouTube getwindowname | sed 's/- YouTube - Chromium//'
+}
+
+cpuCount="$(cat /proc/cpuinfo | grep -c processor)"
+cpuState() {
+    out="$(top -b -n 2 -d 0.05 -w 80)"
+    printf '%s' "$out" | grep Tasks | tail -1
+    printf '%s' "$out" | grep Mem | tail -1
+    printf '%s' "$out" | grep '%Cpu' | tail -$cpuCount
+}
+
+netState() {
+    printf '%s\n' "$(ip a show up | grep inet | scut 2-3 | tail -n +3 | tr '\n' ' ')"
+}
+
+while true; do
+    feedback -r 1337 $noTimeout "$(windowState)" "$(
+        echo
+        date +'%a %Y/%m/%d %H:%M.%S (epoch+%s)'
+        powerState
+        soundState
+        playerState
+        netState
+        echo "--------------------------------------------------------------------------------"
+        test -z "$skipped" || cpuState
+    )"
+    sleep 0.2
+    skipped=1
+done &
+loopId=$!
+
+#TODO: move into a 'wait for super up' script
+if test -n "$noTimeout"; then
+    xsk | while read k; do
+        case "$k" in
+           Super_*\ 0)
+               kill $loopId;
+               feedback -x 1337;
+               exit
+            ;;
+           *) echo "$k"
+        esac
+    done
+fi
