@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #only one at a time (simplifies hotkey daemon handling)
-test "$(pgrep -c swin)" = "1" || exit
+pidof -x -o $$ swin && exit
 
 if desk=$(xdotool get_desktop 2> /dev/null); then
     ewmh=true
