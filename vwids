@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if desk=$(xdotool get_desktop 2> /dev/null); then
+    deskArg="--desktop $desk"
+fi
+
+wids=($(xdotool search --onlyvisible $deskArg '.+' 2> /dev/null))
+printf '0x%x\n' "${wids[@]}"
