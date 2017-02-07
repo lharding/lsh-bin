@@ -66,6 +66,7 @@ while true; do
         soundState
         echo 
         test -z "$skipped" || cpuState
+        test -z "$skipped" && printf 'Waiting for top...\n\n\n\n\n%79s' '.'
     )"
     sleep 0.2
     skipped=1
