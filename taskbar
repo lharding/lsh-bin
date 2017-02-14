@@ -26,7 +26,11 @@ powerState() {
                 ;;
             Battery)
                 if test "$(< "$supply/present")" = "1"; then
-                    printf '%s: %s%% (%s)' "$supply" "$(< "$supply/capacity")" "$(< "$supply/status")"
+                    printf '%s: %s%% (%sW %s)' \
+                        "$supply" \
+                        "$(awk '{print $1*10^-6}' "$supply/power_now")" \
+                        "$(< "$supply/capacity")" \
+                        "$(< "$supply/status")"
                 fi
                 ;;
         esac
