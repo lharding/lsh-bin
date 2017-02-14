@@ -15,6 +15,7 @@ windowState() {
 }
 
 powerState() {
+    local sep=''
     cd /sys/class/power_supply
     ls | while read supply; do
         printf "$sep"
@@ -22,16 +23,21 @@ powerState() {
             Mains)
                 if test "$(< "$supply/online")" = "1"; then
                     printf "${supply}: online"
+                else
+                    printf "${supply}: unplugged"
                 fi
                 ;;
             Battery)
                 if test "$(< "$supply/present")" = "1"; then
                     printf '%s: %s%% (%sW %s)' \
                         "$supply" \
-                        "$(awk '{print $1*10^-6}' "$supply/power_now")" \
                         "$(< "$supply/capacity")" \
+                        "$(awk '{print $1*10^-6}' "$supply/power_now")" \
                         "$(< "$supply/status")"
                 fi
+                ;;
+            *)
+                printf 'Unknown: %s' "$supply"
                 ;;
         esac
         sep=' / '
