@@ -1,0 +1,58 @@
+#!/bin/sh
+
+stateProperty=DESKTOPS_WINDOWS
+
+getState() {
+    xprop -root $stateProperty | sed "s/$stateProperty.*= //"
+}
+
+putState() {
+    xprop -root -format $stateProperty 8s -set $stateProperty "$1"
+}
+
+getCurDesk() {
+    xprop -root _NET_CURRENT_DESKTOP
+}
+
+forgetWin() { 
+    getState | grep -v "win=$1" | putState
+}
+
+addWin() {
+    { 
+        getState | grep -v "win=$2"
+        printf 'desk=%s win=%s\n' "$1" "$2" 
+    } | putState
+}
+
+winToDesk() {
+    win="$1"
+    desk="$2"
+    forgetWin $win
+    addWin $desk $win
+    xprop -id $win -format _NET_WM_DESKTOP 32c -set _NET_WM_DESKTOP $1
+}
+
+getDeskWins() {
+    case $1 in
+        -v) minusV=-v;;
+    esac
+
+    getState | grep $minusV "desk=$2"
+}
+
+mapDesk() {
+    getDeskWins $1 | xargs mapw -m
+    getDeskWins -v $1 | xargs mapw -u
+    xprop -root -format _NET_CURRENT_DESKTOP 32c -set _NET_CURRENT_DESKTOP $1
+}
+
+op="$1"
+shift
+case "$op" in
+    mv) winToDesk $1 $2;;
+    rm) forgetWin $1;;
+    map) mapDesk $1;;
+    *) echo "Usage: sdesk [mv|rm|map] [WINDOW_ID] DESK_ID";;
+esac
+    
