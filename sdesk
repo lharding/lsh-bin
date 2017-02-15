@@ -7,29 +7,26 @@ getState() {
 }
 
 putState() {
-    xprop -root -format $stateProperty 8s -set $stateProperty "$1"
+    xprop -root -format $stateProperty 8s -set $stateProperty "$(cat)"
 }
 
 getCurDesk() {
     xprop -root _NET_CURRENT_DESKTOP
 }
 
-forgetWin() { 
-    getState | grep -v "win=$1" | putState
-}
-
-addWin() {
-    { 
-        getState | grep -v "win=$2"
-        printf 'desk=%s win=%s\n' "$1" "$2" 
-    } | putState
+withoutWin() { 
+    getState | grep -v "win=$1"
 }
 
 winToDesk() {
     win="$1"
     desk="$2"
-    forgetWin $win
-    addWin $desk $win
+
+    {
+        withoutWin $win
+        printf 'desk=%s win=%s\n' "$desk" "$win" 
+    } | putState
+    
     xprop -id $win -format _NET_WM_DESKTOP 32c -set _NET_WM_DESKTOP $1
 }
 
@@ -38,7 +35,7 @@ getDeskWins() {
         -v) minusV=-v;;
     esac
 
-    getState | grep $minusV "desk=$2"
+    getState | grep $minusV "desk=$2" | grep -o "win=\S\+" | cut -d'=' -f2
 }
 
 mapDesk() {
@@ -51,7 +48,7 @@ op="$1"
 shift
 case "$op" in
     mv) winToDesk $1 $2;;
-    rm) forgetWin $1;;
+    rm) withoutWin $1 | putState;;
     map) mapDesk $1;;
     *) echo "Usage: sdesk [mv|rm|map] [WINDOW_ID] DESK_ID";;
 esac
