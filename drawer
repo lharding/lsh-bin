@@ -93,4 +93,4 @@ echo $WINDOW
 mkdir -p "$TMPDIR"
 echo "$WINDOW" > "$TMPDIR$NAME"
 
-xdotool windowmove --sync $WINDOW $LEFT $TOP windowsize --sync $WINDOW $WIDTH $HEIGHT windowfocus $WINDOW windowraise $WINDOW
+xdotool windowmove $WINDOW $LEFT $TOP windowsize $WINDOW $WIDTH $HEIGHT windowfocus $WINDOW windowraise $WINDOW

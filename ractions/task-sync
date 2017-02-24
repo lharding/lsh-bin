@@ -1,6 +1,6 @@
 #!/bin/bash
-                        ADDS=$(printf "%s" "$ES_FIELD_DATA" | jq -r '.added[] | "\(.project) \(.description)"')
-                        MODS=$(printf "%s" "$ES_FIELD_DATA" | jq -r '.modified[] | "\(.status) \(.project) \(.description)"')
-                        feedback -a "Tasklist" "Remote update, running sync..." "<b>Added:</b>\n$ADDS\n\n<b>Modified:</b>\n$MODS"
-                        task sync
-                        killall -USR1 tasknc #make any running tasknc's refresh
+ADDS=$(printf "%s" "$ES_FIELD_DATA" | jq -r '.added[] | "\(.project) \(.description)"')
+MODS=$(printf "%s" "$ES_FIELD_DATA" | jq -r '.modified[] | "\(.status) \(.project) \(.description)"')
+feedback -a "Tasklist" "Remote update, running sync..." "<b>Added:</b>\n$ADDS\n\n<b>Modified:</b>\n$MODS"
+task sync
+killall -USR1 tasknc #make any running tasknc's refresh

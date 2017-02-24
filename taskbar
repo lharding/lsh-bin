@@ -1,6 +1,8 @@
 #!/bin/sh
 xsk Super_L Super_R && noTimeout="-t 0"
 
+pidof -x -o $$ taskbar && exit
+
 windowState() {
     local win=$(pfw)
     local state="$(xprop -id $win)"
