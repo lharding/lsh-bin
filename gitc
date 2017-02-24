@@ -1,0 +1,7 @@
+#!/bin/sh
+colsHalf=$(($(tput cols)/2))
+printf "$(tput smso)%$((colsHalf-3))sSTATUS%$((colsHalf-3))s$(tput rmso)\n" ''
+git status
+echo
+printf "$(tput smso)%$((colsHalf-2))sDIFF%$((colsHalf-2))s$(tput rmso)\n" ''
+git diff
