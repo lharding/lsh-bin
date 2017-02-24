@@ -1,17 +1,13 @@
 #!/bin/sh
 
-edit_cmd=nvim
 allowx=true
 
-if test "$1" = "--nofork"; then 
-    allowx=false
-    shift
-fi
-
+test "$1" = "--nofork" && allowx=false
 test -n "$SSH_CONNECTION" && allowx=false
 
 if $allowx && canx; then
-    $TERMINAL -e $edit_cmd "$@" &
+    nvim-qt "$@"
 else
-    $edit_cmd "$@"
+    test "$1" = "--nofork" && shift
+    nvim "$@"
 fi
