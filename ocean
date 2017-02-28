@@ -1,2 +1,2 @@
 #!/bin/sh
-play -n synth brownnoise treble -20 echos 0.8 0.7 200 0.5
+play -n synth brownnoise treble -20 echos 0.8 0.7 200 0.5 reverb
