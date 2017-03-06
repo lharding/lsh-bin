@@ -1,2 +1,8 @@
 #!/bin/sh
-play -n synth brownnoise treble -20 echos 0.8 0.7 200 0.5 reverb
+play -n synth brownnoise treble -10 echos 0.8 0.7 200 0.5 reverb remix 1 '' &
+pid1=$!
+play -n synth brownnoise treble -10 echos 0.8 0.7 200 0.5 reverb remix '' 1 &
+pid2=$!
+
+wait
+trap "kill $pid1 $pid2" EXIT
