@@ -1,7 +1,7 @@
 #!/bin/sh
-play -n synth brownnoise treble -10 echos 0.8 0.7 200 0.5 reverb remix 1 '' &
+play -n synth brownnoise treble -10 echos 0.8 0.7 200 0.5 reverb remix 1 1v0.2 &
 pid1=$!
-play -n synth brownnoise treble -10 echos 0.8 0.7 200 0.5 reverb remix '' 1 &
+play -n synth brownnoise treble -10 echos 0.8 0.7 200 0.5 reverb remix 1v0.2 1 &
 pid2=$!
 
 wait
