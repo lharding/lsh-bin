@@ -33,7 +33,9 @@ case "$1" in
 esac
 
 ( (
-    echo "Timer set for $TIME seconds from now ($FINISH_TIME). PID=$$";
-    sleep $TIME && "${DONE_CMD[@]}";
-    echo "Timer $$ done." >&2
+    (sleep $TIME; exit 1) &
+    TIMERPID=$!
+    echo "Timer set for $TIME seconds from now ($FINISH_TIME). PID=$TIMERPID";
+    wait $TIMEPID && "${DONE_CMD[@]}";
+    echo "Timer $TIMERPID done." >&2
 )& )&

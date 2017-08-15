@@ -1,7 +1,10 @@
 #!/bin/sh
-colsHalf=$(($(tput cols)/2))
-printf "$(tput smso)%$((colsHalf-3))sSTATUS%$((colsHalf-3))s$(tput rmso)\n" ''
-git status
-echo
-printf "$(tput smso)%$((colsHalf-2))sDIFF%$((colsHalf-2))s$(tput rmso)\n" ''
-git diff
+colsHalf=$(($(tput cols)/2-2)) # pagers like to right-pad so -2
+
+{
+    printf "$(tput smso)%$((colsHalf-3))sSTATUS%$((colsHalf-3))s$(tput rmso)\n" ''
+    git -c color.status=always status
+    echo
+    printf "$(tput smso)%$((colsHalf-2))sDIFF%$((colsHalf-2))s$(tput rmso)\n" ''
+    git diff --color
+} | $PAGER
