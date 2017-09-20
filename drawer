@@ -16,14 +16,17 @@ if [[ -e $TMPDIR$NAME ]]; then
 
     # Window exists? Show/hide it and we're done.
     if wattr "$WINDOW"; then
-        #wmctrl -i -R $WINDOW
-        #wmctrl -i -R $WINDOW -b toggle,hidden
-        # Buggy wmctrl doesn't always focus the window when toggling, so do our own toggle logic:
+        if DESK=$(xdotool get_desktop 2> /dev/null); then
+            if [[ $DESK != $(xdotool get_desktop_for_window "$WINDOW") ]]; then
+                # same as being minimized, so just minimize
+                xdotool windowminimize "$WINDOW" 
+            fi
+            xdotool set_desktop_for_window "$WINDOW" $DESK
+        fi
         if xprop -id "$WINDOW" | grep -q '_NET_WM_STATE_HIDDEN'; then
-            wmctrl -i -r "$WINDOW" -b remove,hidden
-            wmctrl -i -R "$WINDOW"
+            xdotool windowmap "$WINDOW" windowactivate "$WINDOW" windowfocus "$WINDOW" windowraise "$WINDOW"
         else
-            wmctrl -i -R "$WINDOW" -b add,hidden
+            xdotool windowminimize "$WINDOW"
         fi
         exit
     fi
@@ -88,9 +91,8 @@ esac
 $@ &
 WINDOW=$(wew | grep -m 1 '^16:' | cut -d: -f2)
 xdotool set_window --role "drawer" $WINDOW
-sleep 0.5
-echo $WINDOW
 mkdir -p "$TMPDIR"
 echo "$WINDOW" > "$TMPDIR$NAME"
 
+which awesome-client && echo 'client.focus.floating = true' | awesome-client
 xdotool windowmove $WINDOW $LEFT $TOP windowsize $WINDOW $WIDTH $HEIGHT windowfocus $WINDOW windowraise $WINDOW
