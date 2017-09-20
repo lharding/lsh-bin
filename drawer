@@ -15,7 +15,7 @@ if [[ -e $TMPDIR$NAME ]]; then
      read -r WINDOW < "$TMPDIR$NAME"
 
     # Window exists? Show/hide it and we're done.
-    if wattr "$WINDOW"; then
+    if xdotool getwindowname "$WINDOW" &> /dev/null; then
         if DESK=$(xdotool get_desktop 2> /dev/null); then
             if [[ $DESK != $(xdotool get_desktop_for_window "$WINDOW") ]]; then
                 # same as being minimized, so just minimize
@@ -36,11 +36,11 @@ fi
 # ============================================================
 
 # no xinerama for now
-CFG=($(wattr whxy $(lsw -r)))
+CFG=($(xdotool getdisplaygeometry))
 SCR_WIDTH=${CFG[0]}
 SCR_HEIGHT=${CFG[1]}
-SCR_LEFT=${CFG[2]}
-SCR_TOP=${CFG[3]}
+SCR_LEFT=0 #${CFG[2]}
+SCR_TOP=0 #${CFG[3]}
 
 SIDE=$2
 WIDTH=$3
