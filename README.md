@@ -31,7 +31,7 @@ Usage: `drawer NAME [SIDE WIDTH HEIGHT COMMAND]`
 
 When run, `drawer` looks in `/tmp/drawers.wids/` for a file called `NAME` containing an X window id. If found, that window's `hidden` EWMH hint will be toggled. If the file is not found, `COMMAND` is executed and the resulting window is positioned according `SIDE`, `WIDTH`, and `HEIGHT` and then focused, and the windows X window id is written to `/tmp/drawers.wids/$NAME` to allow future toggling.
 
-Drawer requires `xwininfo` (probably included in your distro's X11 utils package), [wmctrl](http://tomas.styblo.name/wmctrl/) and [my fork of xtoolwait](https://github.com/lharding/xtoolwait) (although I have a pull request pending to merge the changes), and, optionally, [xdotool](http://www.semicomplete.com/projects/xdotool/) (to prod certain window managers into making the created window floating).
+Drawer requires `xprop` (probably included in your distro's X11 utils package) and [xdotool](http://www.semicomplete.com/projects/xdotool/) and `wew` from [wmutils/opt](https://github.com/wmutils/opt).
 
 ### journal
 
