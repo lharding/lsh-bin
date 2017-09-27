@@ -89,7 +89,10 @@ esac
 # =================
 
 $@ &
-WINDOW=$(wew | grep -m 1 '^16:' | cut -d: -f2)
+# await new window:
+wew | grep -m 1 '^16:'
+sleep 0.25
+WINDOW="$(xdotool getactivewindow)"
 xdotool set_window --role "drawer" $WINDOW
 mkdir -p "$TMPDIR"
 echo "$WINDOW" > "$TMPDIR$NAME"
