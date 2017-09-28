@@ -16,17 +16,14 @@ if [[ -e $TMPDIR$NAME ]]; then
 
     # Window exists? Show/hide it and we're done.
     if xdotool getwindowname "$WINDOW" &> /dev/null; then
-        if DESK=$(xdotool get_desktop 2> /dev/null); then
-            if [[ $DESK != $(xdotool get_desktop_for_window "$WINDOW") ]]; then
-                # same as being minimized, so just minimize
-                xdotool windowminimize "$WINDOW" 
-            fi
-            xdotool set_desktop_for_window "$WINDOW" $DESK
-        fi
-        if xprop -id "$WINDOW" | grep -q '_NET_WM_STATE_HIDDEN'; then
-            xdotool windowmap "$WINDOW" windowactivate "$WINDOW" windowfocus "$WINDOW" windowraise "$WINDOW"
-        else
+        if xdotool search --onlyvisible . | grep -q "$WINDOW"; then
             xdotool windowminimize "$WINDOW"
+        else
+            if DESK=$(xdotool get_desktop 2> /dev/null); then
+                xdotool set_desktop_for_window "$WINDOW" $DESK
+                sleep 0.005 # wait for wm to notice
+            fi
+            xdotool windowmap "$WINDOW" windowactivate "$WINDOW" windowfocus "$WINDOW" windowraise "$WINDOW"
         fi
         exit
     fi
@@ -90,12 +87,14 @@ esac
 
 $@ &
 # await new window:
-wew | grep -m 1 '^16:'
+wew | grep -m 1 '^16:' &> /dev/null
 sleep 0.25
+
+# new window should now be active, make it our window:
 WINDOW="$(xdotool getactivewindow)"
 xdotool set_window --role "drawer" $WINDOW
 mkdir -p "$TMPDIR"
 echo "$WINDOW" > "$TMPDIR$NAME"
 
-which awesome-client && echo 'client.focus.floating = true' | awesome-client
+which awesome-client &> /dev/null && echo 'client.focus.floating = true' | awesome-client
 xdotool windowmove $WINDOW $LEFT $TOP windowsize $WINDOW $WIDTH $HEIGHT windowfocus $WINDOW windowraise $WINDOW
