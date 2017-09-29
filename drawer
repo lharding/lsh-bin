@@ -19,11 +19,7 @@ if [[ -e $TMPDIR$NAME ]]; then
         if xdotool search --onlyvisible . | grep -q "$WINDOW"; then
             xdotool windowminimize "$WINDOW"
         else
-            if DESK=$(xdotool get_desktop 2> /dev/null); then
-                xdotool set_desktop_for_window "$WINDOW" $DESK
-                sleep 0.005 # wait for wm to notice
-            fi
-            xdotool windowmap "$WINDOW" windowactivate "$WINDOW" windowfocus "$WINDOW" windowraise "$WINDOW"
+            bringwindow -R "$WINDOW"
         fi
         exit
     fi
