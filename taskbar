@@ -13,7 +13,7 @@ windowState() {
     (printf "$state" | grep -qi maximized) && printf '+ '
     (printf "$state" | grep -qi sticky) && printf 'S '
     
-    printf '%s] %s' "$(xdotool get_desktop_for_window "$win")" "$(xdotool getwindowname "$win")"
+    printf '%s] %s' "$(($(xdotool get_desktop_for_window "$win")+1))" "$(xdotool getwindowname "$win")"
 }
 
 powerState() {
