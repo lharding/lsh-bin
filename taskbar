@@ -4,7 +4,7 @@ xsk Super_L Super_R && noTimeout="-t 0"
 pidof -x -o $$ taskbar && exit
 
 windowState() {
-    local win=$(pfw)
+    local win=$(xdotool getactivewindow)
     local state="$(xprop -id $win)"
 
     printf '['
@@ -13,7 +13,7 @@ windowState() {
     (printf "$state" | grep -qi maximized) && printf '+ '
     (printf "$state" | grep -qi sticky) && printf 'S '
     
-    printf '%s] %s' "$(xdotool get_desktop)" "$(wname `pfw`)"
+    printf '%s] %s' "$(xdotool get_desktop_for_window "$win")" "$(xdotool getwindowname "$win")"
 }
 
 powerState() {
