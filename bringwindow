@@ -1,5 +1,30 @@
-#!/bin/sh
-case $1 in "-a") PROMPT="goto:" ;; "-R") PROMPT="bring:" ;; esac
+#!/bin/bash
+case $1 in "-a") PROMPT="Goto:"; MODE="go" ;; "-R") PROMPT="Bring:"; MODE="bring" ;; esac
 
-WINDOW=$(wmctrl -xl | scut ^-3,4-$ -j'\t' | expand -t 12,15,40 | vmenu --no-refocus -p $PROMPT | scut 0)
-[ -n "$WINDOW" ] && wmctrl -i "$1" "$WINDOW"
+WINDOW=$(paste \
+       <(xdotool search .) \
+       <(xdotool search . get_desktop_for_window %@ 2> /dev/null) \
+       <(xdotool search . getwindowname %@) |\
+    grep -v '	-1	' |\
+#TODO: this is so stupid:
+    sed -e 's/\t0\t/ [1] /' \
+        -e 's/\t1\t/ [2] /' \
+        -e 's/\t2\t/ [3] /' \
+        -e 's/\t3\t/ [4] /' \
+        -e 's/\t4\t/ [5] /' \
+        -e 's/\t5\t/ [6] /' \
+        -e 's/\t6\t/ [7] /' \
+        -e 's/\t7\t/ [8] /' \
+        -e 's/\t8\t/ [9] /' |\
+    vmenu --no-refocus -p $PROMPT |\
+    cut -f 1)
+
+if [ -n "$WINDOW" ]; then
+    if [ bring = $MODE ]; then
+        if DESK=$(xdotool get_desktop 2> /dev/null); then
+            xdotool set_desktop_for_window "$WINDOW" $DESK
+            sleep 0.005 # wait for wm to notice
+        fi
+    fi
+    xdotool windowmap "$WINDOW" windowactivate "$WINDOW" windowfocus "$WINDOW" windowraise "$WINDOW"
+fi
