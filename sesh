@@ -13,12 +13,15 @@ case $1 in
             TITLE=$(echo "$WIN" | scut 1-$ | munge)
             DESK=$(echo "$WIN" | scut 0)
             echo "Moving to $DESK: $TITLE"
-            [ "$1" = '-n' ] || wmctrl -r "$TITLE" -t "$DESK"
+            [ "$1" = '-n' ] || xdotool search "$TITLE" set_desktop_for_window "$DESK"
         done < "$CACHE"
         echo "State loaded."
     ;;
     save)
-        wmctrl -l | scut 1,3-$ > "$CACHE"
+        paste -d ' ' <(xdotool search . get_desktop_for_window %@) <(xdotool search . getwindowname %@) | grep -v '^-1' > "$CACHE"
         echo "State saved."
+    ;;
+    *)
+        echo "USAGE: sesh [save|load] [-n]"
     ;;
 esac
