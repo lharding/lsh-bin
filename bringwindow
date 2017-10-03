@@ -10,7 +10,8 @@ else
            <(xdotool search . getwindowname %@) |\
         awk '{FS="\t"; if($2 != -1) printf "%10d [%d] %s\n",$1,$2+1,$3}' |\
         vmenu --no-refocus -p $PROMPT |\
-        cut -f 1)
+        sed 's/^ *//g' |\
+        cut -d ' ' -f 1)
 fi
 
 if [ -n "$WINDOW" ]; then
