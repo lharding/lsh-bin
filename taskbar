@@ -16,6 +16,10 @@ windowState() {
     printf '%s] %s' "$(($(xdotool get_desktop_for_window "$win")+1))" "$(xdotool getwindowname "$win")"
 }
 
+windowList() {
+    xdotool search --onlyvisible --desktop $(xdotool get_desktop) . getwindowname %@
+}
+
 powerState() {
     local sep=''
     cd /sys/class/power_supply
@@ -64,21 +68,29 @@ cpuState() {
 }
 
 netState() {
-    printf '%s\n' "$(ip a show up | grep inet | scut 2-3 | tail -n +3 | tr '\n' ' ')"
+    ip a show up | grep inet | scut 2-3 | tail -n +3 | tr '\n' ' ' | fold -s -w 80
+    echo
+}
+
+formatSection() {
+    sed -e "1 s/^/$1 /" -e '1! s/^/   /'
+    echo
 }
 
 while true; do
     feedback -r 1337 $noTimeout "$(windowState)" "$(
         echo
-        date +'%a %Y/%m/%d %H:%M.%S (epoch+%s)'
-        powerState
-        netState
-        echo
-        playerState
-        soundState
-        echo 
-        test -z "$skipped" || cpuState
-        test -z "$skipped" && printf 'Waiting for top...\n\n\n\n\n%79s' '.'
+        date +'%a %Y/%m/%d %H:%M.%S (epoch+%s)' | formatSection '⏰'
+        windowList | formatSection '🖥️'
+        powerState | formatSection '🔌'
+        netState | formatSection '📡'
+        playerState | formatSection '🎵'
+        soundState | formatSection '🔊'
+        if test -z "$skipped"; then
+            printf 'Waiting for top...\n\n\n\n\n%79s' '.'
+        else
+            cpuState
+        fi | formatSection '📊'
     )"
     sleep 0.2
     skipped=1
