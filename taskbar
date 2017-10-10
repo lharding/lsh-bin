@@ -73,8 +73,8 @@ netState() {
 }
 
 formatSection() {
-    sed -e "1 s/^/$1 /" -e '1! s/^/   /'
-    echo
+    section="$(sed -e "1 s/^/$1 /" -e '1! s/^/   /')"
+    test -n "$section" && printf "%s\n\n" "$section"
 }
 
 while true; do
