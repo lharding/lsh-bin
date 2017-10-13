@@ -14,7 +14,7 @@ else
     wids=($(lsw | sort -h))
 fi
 
-windows="$(wname ${wids[@]} | sed 's/^/  /')"
+windows="$(wname ${wids[@]} | sed -e 's/^/  /' -e 's/</≺/g')"
 winCount=${#wids[@]}
 notificationId=1337
 focusIdx=$(($(printf '%s\n' "${wids[@]}" | grep -m 1 -n $(xdotool getwindowfocus 2> /dev/null) | cut -d':' -f1)-1))

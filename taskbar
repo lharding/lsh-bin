@@ -17,7 +17,7 @@ windowState() {
 }
 
 windowList() {
-    xdotool search --onlyvisible --desktop $(xdotool get_desktop) . getwindowname %@
+    xdotool search --onlyvisible --desktop $(xdotool get_desktop) . getwindowname %@ | sed 's/</≺/g'
 }
 
 powerState() {
