@@ -5,7 +5,7 @@ if test "$1" = "--no-refocus"; then
 fi
 
 if ! canx; then
-    slmenu "$@" -b -i -l $(($(tput lines)-1))
+    fzf
 else
     [ -z $NOFOCUS ] && WINDOW=$(xdotool getactivewindow)
     dmenu -l 50 -i -t "$@"
