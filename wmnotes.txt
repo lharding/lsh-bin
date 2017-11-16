@@ -1,0 +1,26 @@
+Structure:
+    space ...
+        stack [geometry] ...
+            window ...
+        quicktoggle [window] ...
+    drawer [window] ...
+
+Bindings needed:
+    switch to space
+    move win to space
+
+    focus stack +
+    focus stack -
+
+    focus win in stack +
+    focus win in stack -
+    
+    move win to next stack
+    move win to prev stack
+    
+    move stack +
+    move stack -
+    move stack to space
+
+    swap stack layout (monocle, hstack, vstack)
+    

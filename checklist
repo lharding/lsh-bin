@@ -1,0 +1,10 @@
+#!/bin/bash
+
+listFile="$1"
+projName="$(basename $listFile)-$(date +'%Y%m%d%H%M')"
+
+while read line; do
+    task add "pro:$projName" $line
+done < $1
+
+task "pro:$projName"

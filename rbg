@@ -1,0 +1,6 @@
+#!/bin/bash
+cacheDir="$HOME/.cache/rbg"
+mkdir -p "$cacheDir"
+("$@" > "$cacheDir/$1.log" 2>&1) &
+disown %1
+
