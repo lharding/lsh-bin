@@ -83,7 +83,7 @@ while true; do
         date +'%a %Y/%m/%d %H:%M.%S (epoch+%s)' | formatSection '⏰'
         windowList | formatSection '🖥️'
         powerState | formatSection '🔌'
-        netState | formatSection '📡'
+        netState | formatSection '📶'
         playerState | formatSection '🎵'
         soundState | formatSection '🔊'
         if test -z "$skipped"; then

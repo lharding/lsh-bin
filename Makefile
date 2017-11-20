@@ -1,4 +1,4 @@
-all: diewithparent canx xawaitkill xsk
+all: diewithparent canx xawaitkill xsk wname
 
 diewithparent: diewithparent.c
 	cc -o diewithparent diewithparent.c
@@ -11,3 +11,6 @@ xawaitkill: xawaitkill.c
 
 xsk: xsk.c
 	cc -o xsk xsk.c -lX11
+
+wname: wname.c
+	cc -o wname wname.c -lxcb
