@@ -7,7 +7,7 @@ echo "swin new invocation"
 
 if desk=$(xdotool get_desktop 2> /dev/null); then
     ewmh=true
-    deskMsg="Space $desk windows:"
+    deskMsg="Space $((desk+1)) windows:"
     wids=($(xdotool search --onlyvisible --desktop $desk '.+' 2> /dev/null | sort -h))
 else
     deskMsg="Windows:"

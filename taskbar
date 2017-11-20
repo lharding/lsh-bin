@@ -3,6 +3,10 @@ xsk Super_L Super_R && noTimeout="-t 0"
 
 pidof -x -o $$ taskbar && exit
 
+sanitize() {
+ sed 's/</≺/g'
+} 
+
 windowState() {
     local win=$(xdotool getactivewindow)
     local state="$(xprop -id $win)"
@@ -13,11 +17,11 @@ windowState() {
     (printf "$state" | grep -qi maximized) && printf '+ '
     (printf "$state" | grep -qi sticky) && printf 'S '
     
-    printf '%s] %s' "$(($(xdotool get_desktop_for_window "$win")+1))" "$(xdotool getwindowname "$win")"
+    printf '%s] %s' "$(($(xdotool get_desktop_for_window "$win")+1))" "$(xdotool getwindowname "$win" | sanitize)"
 }
 
 windowList() {
-    xdotool search --onlyvisible --desktop $(xdotool get_desktop) . getwindowname %@ | sed 's/</≺/g'
+    xdotool search --onlyvisible --desktop $(xdotool get_desktop) . getwindowname %@ | sanitize
 }
 
 powerState() {
