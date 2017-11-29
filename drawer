@@ -25,6 +25,11 @@ if [[ -e $TMPDIR$NAME ]]; then
     fi
 fi
 
+if [[ $# -lt 5 ]]; then
+    echo "Not enough args to launch a new $NAME."
+    exit 1
+fi
+
 # No window to show/hide, better create it. Do setup for that.
 # ============================================================
 
@@ -81,9 +86,14 @@ esac
 # Create the window
 # =================
 
-$@ &
+sh -c "$@" &
 # await new window:
-wew | grep -m 1 '^16:' &> /dev/null
+countWins() { 
+    xdotool search --onlyvisible . 2> /dev/null | wc -l 
+}
+
+WIN_CNT="$(countWins)"
+while [[ $(countWins) = "$WIN_CNT" ]]; do sleep 0.1; done
 sleep 0.25
 
 # new window should now be active, make it our window:
