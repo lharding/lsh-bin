@@ -1,0 +1,6 @@
+#!/bin/sh
+
+tmux list-sessions -F '#{session_name} #{session_attached}' | grep '^urxvt_' | grep ' 0$' | while read id attached; do
+    echo "Killing session $id ($attached attached)"
+    tmux kill-session -t "$id"
+done
