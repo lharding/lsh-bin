@@ -10,7 +10,7 @@ if [ "apple" = "$1" ]; then
         fi
     done
 else
-#    xmodmap -e 'remove mod1 = Alt_L' -e 'keycode 64 = Super_L'
+    xmodmap -e 'remove mod1 = Alt_L' -e 'keycode 64 = Super_L'
 fi
 
 feedback "Keys remapped."

@@ -34,7 +34,7 @@ mvFocus() {
 }
 
 notify() {
-    feedback -r $notificationId -t 0 "$deskMsg $((focusIdx+1))/$winCount" "$(printf '%s' "$windows" | sed "$((focusIdx+1)) s/^  \(.*\)$/⮀<b><u>\1<\/u><\/b>/")" > /dev/null
+    feedback -r $notificationId -t 0 "$deskMsg $((focusIdx+1))/$winCount" "$(printf '%s' "$windows" | sed "$((focusIdx+1)) s/^  \(.*\)$/▶️ <b><u>\1<\/u><\/b>/")" > /dev/null
 }
 
 #handle first arg from hotkey daemon

@@ -1,0 +1,6 @@
+#!/bin/sh
+if test "-e" = "$1"; then
+    shift
+fi
+
+urxvtc -e tmux new-session -c "$(pwd)" -s "urxvt_$(randstr)" "$@"
