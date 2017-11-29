@@ -86,7 +86,7 @@ esac
 # Create the window
 # =================
 
-sh -c "$@" &
+$@ &
 # await new window:
 countWins() { 
     xdotool search --onlyvisible . 2> /dev/null | wc -l 
