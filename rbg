@@ -1,0 +1,2 @@
+#!/bin/sh
+tmux new-session -d -s "$1_$(randstr)" "$@"

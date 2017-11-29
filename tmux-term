@@ -1,6 +1,14 @@
 #!/bin/sh
+TERMCMD="urxvtc -e"
+
 if test "-e" = "$1"; then
     shift
 fi
 
-urxvtc -e tmux new-session -c "$(pwd)" -s "urxvt_$(randstr)" "$@"
+if test "a" = "$1"; then
+    session="$2"
+    if test -z "$session"; then session="$(tmux list-sessions | vmenu | cut -f 1 -d ':')"; fi
+    exec $TERMCMD tmux attach -t "$session"
+else
+    exec $TERMCMD tmux new-session -c "$(pwd)" -s "urxvt_$(randstr)" "$@"
+fi
