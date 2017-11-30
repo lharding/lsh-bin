@@ -102,5 +102,6 @@ xdotool set_window --role "drawer" $WINDOW
 mkdir -p "$TMPDIR"
 echo "$WINDOW" > "$TMPDIR$NAME"
 
-which awesome-client &> /dev/null && echo 'client.focus.floating = true' | awesome-client
+border_width="$(xgetres awesome border_width)"
+which awesome-client &> /dev/null && echo "client.focus.floating = true; client.focus.border_width=$border_width" | awesome-client
 xdotool windowmove $WINDOW $LEFT $TOP windowsize $WINDOW $WIDTH $HEIGHT windowfocus $WINDOW windowraise $WINDOW
