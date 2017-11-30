@@ -8,7 +8,8 @@ munge() {
         -e 's/^.*- Discord$/- Discord/g' \
         -e 's/\-/\\-/g' \
         -e 's/\[/\\[/g' \
-        -e 's/\./\\./g'
+        -e 's/\./\\./g' \
+        -e 's/(/\\(/g'
 }
 
 case $1 in
