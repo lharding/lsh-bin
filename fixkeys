@@ -9,8 +9,8 @@ if [ "apple" = "$1" ]; then
             sudo fix-apple-kb "$DEV"
         fi
     done
-else
-    xmodmap -e 'remove mod1 = Alt_L' -e 'keycode 64 = Super_L'
+#else
+#    xmodmap -e 'remove mod1 = Alt_L' -e 'keycode 64 = Super_L'
 fi
 
 feedback "Keys remapped."
