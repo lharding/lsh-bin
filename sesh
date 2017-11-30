@@ -3,7 +3,12 @@
 CACHE="$HOME/.cache/sesh.state"
 echo "Using cache file $CACHE"
 munge() {
-    sed 's/Inbox ([,0-9]\+).\+@gmail.com//' | sed 's/^[^|]\+| \(.*Slack.*\)/\1/' | sed 's/([^)]\+)//g'
+    sed -e 's/^Inbox[^-]*\(- [^@]\+@[^ ]\+ -\).*$/\1/g' \
+        -e 's/^Slack -.*$/Slack -/g' \
+        -e 's/^.*- Discord$/- Discord/g' \
+        -e 's/\-/\\-/g' \
+        -e 's/\[/\\[/g' \
+        -e 's/\./\\./g'
 }
 
 case $1 in
