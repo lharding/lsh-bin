@@ -1,3 +1,6 @@
 #!/bin/sh
-echo "$@"
-urxvtc +si -sw -sl 50000 -hold -e /usr/bin/man -P cat "$@"
+if canx; then
+    /usr/bin/man "$@" | tv
+else
+    /usr/bin/man "$@"
+fi

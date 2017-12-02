@@ -1,0 +1,6 @@
+#!/bin/sh
+tmpfile="/tmp/tv-fifo-$$"
+mkfifo "$tmpfile"
+tmux-term -e "cat \"$tmpfile\"; tmux copy-mode \; send-key g; sleep 32768h" &
+cat > "$tmpfile"
+rm "$tmpfile"
