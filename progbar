@@ -1,0 +1,38 @@
+#!/bin/sh
+
+vblocks=(' ' ▁ ▂ ▃ ▄ ▅ ▆ ▇ █)
+blocks=(" " ▏ ▎ ▍ ▌ ▋ ▊ ▉ █)
+
+graph() {
+    local amount=$(( $1 * 1000 ))
+    local max=$(( $2 ))
+
+    local y=$((amount / max * 9 / 1000))
+    
+    if test "-v" = "$3"; then
+        printf "${vblocks[$y]}"
+    elif test "-vh" = "$3"; then
+        for i in $(seq 1 $y); do
+            printf "${vblocks[$i]}"
+        done
+    else
+        width=$(( $3 * 8 ))
+        if test -z "$width"; then width="$(tput cols)"; fi
+        steps=$((amount / max * width / 1000))
+        chars=$((steps/8))
+
+        test $chars -gt 0 && printf "%$((steps/8 - 1))s" 'x' | sed 's/[x ]/▉/g'
+
+        printf "${blocks[$((steps%8))]} %$((width / 8 - chars - 1))s" ']'
+    fi
+}
+
+if test "-" = "$1"; then
+    while read one two three; do
+        if test -z "$two"; then two="$2"; fi
+        if test -z "$three"; then three="$3"; fi
+        graph "$one" "$two" "$three"
+    done
+else
+    graph "$@"
+fi

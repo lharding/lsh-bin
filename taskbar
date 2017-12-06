@@ -39,9 +39,11 @@ powerState() {
                 ;;
             Battery)
                 if test "$(< "$supply/present")" = "1"; then
-                    printf '%s: %s%% (%sW %s)' \
+                    local capacity="$(< "$supply/capacity")"
+                    printf '%s: %s%% [%s] (%sW %s)' \
                         "$supply" \
-                        "$(< "$supply/capacity")" \
+                        "$capacity" \
+                        "$(progbar "$capacity" 100 -v)" \
                         "$(awk '{print $1*10^-6}' "$supply/power_now")" \
                         "$(< "$supply/status")"
                 fi
@@ -67,13 +69,26 @@ cpuCount="$(cat /proc/cpuinfo | grep -c processor)"
 cpuState() {
     out="$(top -b -n 2 -d 0.05 -w 80)"
     printf '%s' "$out" | grep Tasks | tail -1
-    printf '%s' "$out" | grep Mem | tail -1
     printf '%s' "$out" | grep '%Cpu' | tail -$cpuCount
 }
 
 netState() {
-    ip a show up | grep inet | scut 2-3 | tail -n +3 | tr '\n' ' ' | fold -s -w 80
-    echo
+    state="$(ip -o a show up | cut -d'\' -f 1 | grep -v ': lo' | sed -e 's/^[^ ]* //' -e 's/ \+/ /g')"
+    printf "$state" | cut -d' ' -f 1 | sort -u | while read iface; do
+        wifi="$(printf "$iface" | grep -o 'wlp[[:alnum:]]\+')"
+        printf "<b>$iface</b> "
+        firstIndent=2
+        if test -n "$wifi"; then
+            linkStat="$(iw $wifi link | sed 's/^[[:space:]]\+//g')"
+            printf "$linkStat" | grep SSID | tr -d '\n'
+            local db="$(printf "$linkStat" | grep signal | grep -o '[0-9-]\+')"
+            printf " %2d dBm " "$db"
+            progbar $((100 + db)) 60 -vh
+            echo
+            firstIndent=1
+        fi
+        printf "$state" | grep "^$iface" | cut -d' ' -f 2- | sed "$firstIndent,\$s/^/  /"
+    done
 }
 
 formatSection() {
@@ -85,7 +100,7 @@ while true; do
     feedback -r 1337 $noTimeout "$(windowState)" "$(
         echo
         date +'%a %Y/%m/%d %H:%M.%S (epoch+%s)' | formatSection '⏰'
-        windowList | formatSection '🖥️'
+        windowList | formatSection '[]'
         powerState | formatSection '🔌'
         netState | formatSection '📶'
         playerState | formatSection '🎵'
