@@ -8,13 +8,13 @@ echo "swin new invocation"
 if desk=$(xdotool get_desktop 2> /dev/null); then
     ewmh=true
     deskMsg="Space $((desk+1)) windows:"
-    wids=($(xdotool search --onlyvisible --desktop $desk '.+' 2> /dev/null | sort -h))
+    wids=($(xdotool search --onlyvisible --desktop $desk '.*' 2> /dev/null | sort -h))
 else
     deskMsg="Windows:"
     wids=($(lsw | sort -h))
 fi
 
-windows="$(wname ${wids[@]} | sed -e 's/^/  /' -e 's/</≺/g')"
+windows="$(wname ${wids[@]} | sed -e 's/^$/[ window has no name ]/' -e 's/^/  /' -e 's/</≺/g')"
 winCount=${#wids[@]}
 notificationId=1337
 focusIdx=$(($(printf '%s\n' "${wids[@]}" | grep -m 1 -n $(xdotool getwindowfocus 2> /dev/null) | cut -d':' -f1)-1))
