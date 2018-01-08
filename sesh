@@ -6,6 +6,8 @@ munge() {
     sed -e 's/^Inbox[^-]*\(- [^@]\+@[^ ]\+ -\).*$/\1/g' \
         -e 's/^Slack -.*$/Slack -/g' \
         -e 's/^.*- Discord$/- Discord/g' \
+        -e 's/^\(DAT Solutions - Calendar -\).*$/\1/g' \
+        -e 's/|/\\|/g' \
         -e 's/\-/\\-/g' \
         -e 's/\[/\\[/g' \
         -e 's/\./\\./g' \
