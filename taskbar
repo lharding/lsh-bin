@@ -40,11 +40,14 @@ powerState() {
             Battery)
                 if test "$(< "$supply/present")" = "1"; then
                     local capacity="$(< "$supply/capacity")"
+                    local power="$(< "$supply/power_now")"
+                    local mul=1000000
+                    if test -z "$power"; then power="$(<"$supply/voltage_now")"; mul="$(<"$supply/current_now")"; fi
                     printf '%s: %s%% [%s] (%sW %s)' \
                         "$supply" \
                         "$capacity" \
                         "$(progbar "$capacity" 100 -v)" \
-                        "$(awk '{print $1*10^-6}' "$supply/power_now")" \
+                        "$(printf '%s %s' "$power" "$mul" | awk '{print $1*$2*10^-12}')" \
                         "$(< "$supply/status")"
                 fi
                 ;;
@@ -63,13 +66,23 @@ soundState() {
 
 playerState() {
      xdotool search YouTube getwindowname | sed 's/- YouTube - Chromium//'
+     { 
+         gpmdp-remote status | sed -e 's/Playing/▶️/' -e 's/Paused/⏸️/'
+         gpmdp-remote current
+     } | tr '\n' ' '
 }
 
 cpuCount="$(cat /proc/cpuinfo | grep -c processor)"
 cpuState() {
     out="$(top -b -n 2 -d 0.05 -w 80)"
     printf '%s' "$out" | grep Tasks | tail -1
-    printf '%s' "$out" | grep '%Cpu' | tail -$cpuCount
+    printf '%s' "$out" | grep '%Cpu' | tail -$cpuCount | sed 's/%Cpu/cpu/' | while read cpu status; do
+        cpuPath="/sys/devices/system/cpu/$cpu"
+        printf '%s %s %4d MHz %s\n' \
+            "$cpu" \
+            "$(sed -e 's/performance/🐇/' -e 's/powersave/🐢/' < "$cpuPath/cpufreq/scaling_governor")" \
+            "$(( $(<"$cpuPath/cpufreq/scaling_cur_freq") / 1000 ))" "$status"
+    done
 }
 
 netState() {
