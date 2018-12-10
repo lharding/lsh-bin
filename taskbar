@@ -74,7 +74,7 @@ playerState() {
 
 cpuCount="$(cat /proc/cpuinfo | grep -c processor)"
 cpuState() {
-    out="$(top -b -n 2 -d 0.05 -w 80)"
+    out="$(top -1 -b -n 2 -d 0.05 -w 80)"
     printf '%s' "$out" | grep Tasks | tail -1
     printf '%s' "$out" | grep '%Cpu' | tail -$cpuCount | sed 's/%Cpu/cpu/' | while read cpu status; do
         cpuPath="/sys/devices/system/cpu/$cpu"
