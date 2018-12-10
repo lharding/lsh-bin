@@ -1,6 +1,6 @@
 #!/bin/sh
-if canx; then
-    /usr/bin/man "$@" | tv
+if canx && printf "%s" "$*" | grep -qv -e '^-.\|\W-.'; then
+    /usr/bin/man -H "$@"
 else
     /usr/bin/man "$@"
 fi
