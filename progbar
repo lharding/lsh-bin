@@ -16,14 +16,21 @@ graph() {
             printf "${vblocks[$i]}"
         done
     else
-        width=$(( $3 * 8 ))
-        if test -z "$width"; then width="$(tput cols)"; fi
+        charWidth="$3"
+        if test -z "$charWidth"; then charWidth="$(tput cols)"; fi
+        width=$(( charWidth * 9 ))
         steps=$((amount / max * width / 1000))
-        chars=$((steps/8))
+        chars=$((steps/9))
+        lastBlock=$((steps%9))
 
-        test $chars -gt 0 && printf "%$((steps/8 - 1))s" 'x' | sed 's/[x ]/▉/g'
+        test $chars -gt 0 && printf "%$((chars))s" 'x' | sed 's/[x ]/▉/g'
 
-        printf "${blocks[$((steps%8))]} %$((width / 8 - chars - 1))s" ']'
+        if test $lastBlock -gt 0; then
+            printf "${blocks[$lastBlock]}"
+            chars=$((chars + 1))
+        fi
+
+        printf "%$((charWidth - chars + 1))s" ']'
     fi
 }
 

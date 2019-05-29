@@ -73,15 +73,21 @@ playerState() {
 }
 
 cpuCount="$(cat /proc/cpuinfo | grep -c processor)"
+
+cpuBar() {
+    val="$(echo "$1" | sed 's/\..*$//')"
+    progbar "$val" 100 10
+}
+
 cpuState() {
     out="$(top -1 -b -n 2 -d 0.05 -w 80)"
     printf '%s' "$out" | grep Tasks | tail -1
-    printf '%s' "$out" | grep '%Cpu' | tail -$cpuCount | sed 's/%Cpu/cpu/' | while read cpu status; do
+    printf '%s' "$out" | grep '%Cpu' | tail -$cpuCount | sed 's/%Cpu/cpu/' | while read cpu status us _us sy _st ni _ni; do
         cpuPath="/sys/devices/system/cpu/$cpu"
-        printf '%s %s %4d MHz %s\n' \
+        printf '%s %s %4d MHz %s us %s sy %s ni\n' \
             "$cpu" \
             "$(sed -e 's/performance/🐇/' -e 's/powersave/🐢/' < "$cpuPath/cpufreq/scaling_governor")" \
-            "$(( $(<"$cpuPath/cpufreq/scaling_cur_freq") / 1000 ))" "$status"
+            "$(( $(<"$cpuPath/cpufreq/scaling_cur_freq") / 1000 ))" "$(cpuBar $us)" "$(cpuBar $sy)" "$(cpuBar $ni)"
     done
 }
 
