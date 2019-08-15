@@ -21,7 +21,8 @@ if [ 0 -eq "$TIME" ]; then
     exit 1
 fi
 
-FINISH_TIME=$(date --date=@$(($(date +%s)+TIME)))
+FINISH_SECONDS=$(($(date +%s)+TIME))
+FINISH_TIME=$(date --date=@$FINISH_SECONDS)
 
 MESSAGE="Timer $$ done."
 DONE_CMD=( feedback -u critical "$MESSAGE" )
@@ -35,6 +36,7 @@ esac
 ( (
     (sleep $TIME; exit 1) &
     TIMERPID=$!
+    trap "echo $TIMERPID $(($FINISH_SECONDS - $(date +%s))) $FINISH_TIME >> /tmp/timers.state" SIGUSR1
     echo "Timer set for $TIME seconds from now ($FINISH_TIME). PID=$TIMERPID";
     wait $TIMEPID && "${DONE_CMD[@]}";
     echo "Timer $TIMERPID done." >&2
