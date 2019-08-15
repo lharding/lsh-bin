@@ -1,0 +1,7 @@
+#!/bin/sh
+if which physlock; then
+    physlock
+else
+    slock
+fi
+

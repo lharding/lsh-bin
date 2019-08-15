@@ -1,1 +1,2 @@
-chat
+#!/bin/bash
+feedback "Alert from $ES_FIELD_FROM" "$ES_FIELD_DATA"

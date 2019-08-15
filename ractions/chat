@@ -1,4 +1,4 @@
 #!/bin/bash
-                        if ! printf "%s" "$ES_FIELD_FROM" | grep -qi "$USER@$( hostname )"; then
-                            feedback "Chat from $ES_FIELD_FROM" "$ES_FIELD_DATA"
-                        fi
+if ! printf "%s" "$ES_FIELD_FROM" | grep -qi "$USER@$( hostname )"; then
+    feedback "Chat from $ES_FIELD_FROM" "$ES_FIELD_DATA"
+fi
