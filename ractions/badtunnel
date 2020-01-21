@@ -1,4 +1,3 @@
 #!/bin/bash
 feedback -u critical "Starting badtunnel for $ES_FIELD_HOST by $ES_FIELD_FROM"
-                killall badtunnel;
-                (nohup badtunnel > "$HOME/.cache/badtunnel.log") &
+(nohup badtunnel > "$HOME/.cache/badtunnel.log") &
