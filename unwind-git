@@ -1,0 +1,13 @@
+#!/bin/bash
+
+outDir=/tmp/unwound
+
+git log --oneline --reverse | cut -d' ' -f 1 | while read hash; do
+    git checkout "$hash"
+    fDate="$(git show -s --format=%ci | sed 's/[ :]/_/g' | sed 's/_-0[78]00$//')"
+    git diff-tree --no-commit-id --name-only -r "$hash" | while read path; do
+        fDir="$outDir/$path"
+        mkdir -p "$fDir"
+        cp -a "$path" "$fDir/${fDate}.md"
+    done
+done
