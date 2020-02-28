@@ -1,2 +1,6 @@
 #!/bin/sh
-date +'%Y%m%d:%H%M.%S (epoch+%s)'
+if test "$1" = '-s'; then
+    date +'%Y%m%d:%H%M.%S'
+else
+    date +'%Y%m%d:%H%M.%S (epoch+%s)'
+fi
