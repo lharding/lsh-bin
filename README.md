@@ -6,6 +6,8 @@ Fair warning: these are [shop built jigs](http://robnapier.net/go-is-a-shop-buil
 
 ## The Scripts
 
+Not everything is documented here. Some scripts are self-explanatory.
+
 ### backup
 
 Perform an rsync backup to `$DSTHOST:backup/$HOST`.
@@ -51,13 +53,15 @@ Just runs `mknote` in a loop, for e.g. keeping a drawer term to collect and show
 
 ### obsess
 
-Repeatedly run a command at a specified frequency, clearing the terminal before each execution. 
+Poor-person's version of `watch(1)`. Repeatedly run a command at a specified frequency, clearing the terminal before each execution. 
 
 Usage: `obsess DELAY COMMAND...`
 
 `DELAY` is the (floating point) number of seconds between invokations of `COMMAND`. Try `obsess 1 date` if it's not clear what this script is for.
 
 ### rclip
+
+#### DEPRECATED!
 
 Remote clipboard with logging; replaces Pocket, Pinboard, etc with a very small shell script.
 
@@ -112,6 +116,8 @@ WARNING: contains python. A Golang version is in the works.
 Use `vmenu` to select a line from `STDIN` (assumed to be output from the `history` command) and print it to `STDOUT`. Intended to be used from your shell's `readline` to place a selection from your history on the command line for editing.
 
 ### tman
+
+#### DEPRECATED
 
 Run `man` with the given arguments, and display the outputs in a new terminal window.
 
