@@ -82,7 +82,7 @@ cpuBar() {
 cpuState() {
     out="$(top -1 -b -n 2 -d 0.05 -w 80)"
     printf '%s' "$out" | grep Tasks | tail -1
-    printf '%s' "$out" | grep '%Cpu' | tail -$cpuCount | sed 's/%Cpu/cpu/' | while read cpu status us _us sy _st ni _ni; do
+    printf '%s' "$out" | grep -e '%Cpu' | tail -$cpuCount | sed 's/%Cpu/cpu/' | tr -d ':' | while read cpu us _us sy _st ni _ni; do
         cpuPath="/sys/devices/system/cpu/$cpu"
         printf '%s %s %4d MHz %s us %s sy %s ni\n' \
             "$cpu" \

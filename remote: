@@ -1,0 +1,3 @@
+#!/bin/sh
+echo "Opening $1"
+www-browser "$1"
