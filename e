@@ -1,16 +1,20 @@
 #!/bin/sh
 
-allowx=true
+shouldFork=true
 
 if test "$1" = "--nofork"; then
-    allowx=false
+    shouldFork=false
     shift
 fi
 
-test -n "$SSH_CONNECTION" && allowx=false
+test -n "$SSH_CONNECTION" && shouldFork=false
 
-if $allowx && canx; then
-    alacritty -e nvim "$@"
+if canx; then
+    if $shouldFork; then
+        alacritty -e nvim "$@" &
+    else
+        alacritty -e nvim "$@"
+    fi
 else
     test "$1" = "--nofork" && shift
     nvim "$@"
